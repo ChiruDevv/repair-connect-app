@@ -14,6 +14,9 @@ export default function HomePage() {
             <span className="font-bold tracking-tight text-lg text-gray-900">RepairConnect</span>
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-gray-900 px-4 py-2 transition-colors">
+              Dashboard
+            </Link>
             <Link href="/auth/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 px-4 py-2 transition-colors">
               Sign in
             </Link>
