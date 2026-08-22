@@ -11,6 +11,9 @@ export interface IServiceProvider extends Document {
   name: string;
   category: "electronics" | "furniture" | "bicycle" | "appliance" | "other";
   address: string;
+  city: string;
+  state: string;
+  location: { lat: number; lng: number };
   phone: string;
   rating: number;
   reviews: IReview[];
@@ -35,6 +38,20 @@ const ServiceProviderSchema = new Schema<IServiceProvider>(
     address: {
       type: String,
       required: [true, "Address is required"],
+    },
+    city: {
+      type: String,
+      required: [true, "City is required"],
+      trim: true,
+    },
+    state: {
+      type: String,
+      required: [true, "State is required"],
+      trim: true,
+    },
+    location: {
+      lat: { type: Number, required: true },
+      lng: { type: Number, required: true },
     },
     phone: {
       type: String,
@@ -69,7 +86,6 @@ const ServiceProviderSchema = new Schema<IServiceProvider>(
 );
 
 const ServiceProvider: Model<IServiceProvider> =
-  mongoose.models.ServiceProvider ||
-  mongoose.model<IServiceProvider>("ServiceProvider", ServiceProviderSchema);
+  mongoose.models.ServiceProvider || mongoose.model<IServiceProvider>("ServiceProvider", ServiceProviderSchema);
 
 export default ServiceProvider;

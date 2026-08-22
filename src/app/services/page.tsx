@@ -14,10 +14,24 @@ export default function ServicesPage() {
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState("");
 
-  useEffect(() => {
-    fetch("/api/services?category=" + filter)
+  const fetchServices = (lat?: number, lng?: number) => {
+    setLoading(true);
+    let url = "/api/services?category=" + filter;
+    if (lat !== undefined && lng !== undefined) {
+      url += "&lat=" + lat + "&lng=" + lng;
+    }
+    fetch(url)
       .then(r => r.json())
-      .then(d => { setServices(d); setLoading(false); });
+      .then(d => { setServices(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (location) {
+      fetchServices(location.lat, location.lng);
+    } else {
+      fetchServices();
+    }
   }, [filter]);
 
   const requestLocation = () => {
@@ -25,8 +39,16 @@ export default function ServicesPage() {
     setLocationLoading(true);
     setLocationError("");
     navigator.geolocation.getCurrentPosition(
-      (pos) => { setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocationLoading(false); },
-      () => { setLocationError("Location access denied. Showing all shops."); setLocationLoading(false); }
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setLocation(loc);
+        setLocationLoading(false);
+        fetchServices(loc.lat, loc.lng);
+      },
+      () => {
+        setLocationError("Location access denied. Showing all shops.");
+        setLocationLoading(false);
+      }
     );
   };
 
@@ -48,7 +70,7 @@ export default function ServicesPage() {
           <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <p className="font-medium text-gray-900 text-sm">Find shops near you</p>
-              <p className="text-xs text-gray-500 mt-0.5">Grant location access to see nearby repair services</p>
+              <p className="text-xs text-gray-500 mt-0.5">Enable location to see nearby repair services</p>
             </div>
             <button onClick={requestLocation} disabled={locationLoading}
               className="flex items-center gap-2 bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 flex-shrink-0">
@@ -59,7 +81,7 @@ export default function ServicesPage() {
         )}
         {location && (
           <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-6 flex items-center gap-2 text-sm text-emerald-700">
-            <MapPin size={15} /> Location enabled — showing shops near you
+            <MapPin size={15} /> Showing shops near you (sorted by proximity)
           </div>
         )}
         {locationError && <p className="text-amber-600 text-sm mb-4">{locationError}</p>}
@@ -80,7 +102,7 @@ export default function ServicesPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {services.map(s => (
+            {services.map((s: any) => (
               <div key={s._id} className="bg-white rounded-xl border border-gray-100 p-5 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
