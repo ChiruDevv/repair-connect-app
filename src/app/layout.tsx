@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "MERN Next App",
-  description: "Full stack MERN application with Next.js",
+  title: "RepairConnect - Repair, Don't Replace",
+  description:
+    "Upload a photo of your broken item, get AI-powered diagnosis, and find repair options near you.",
 };
 
 export default function RootLayout({
@@ -13,7 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
