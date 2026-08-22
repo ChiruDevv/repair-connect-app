@@ -22,6 +22,7 @@ export default function FileUpload({ onUpload }: FileUploadProps) {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (data.url) onUpload(data.url);
+      setUploading(false);
     } catch { setUploading(false); }
   };
 

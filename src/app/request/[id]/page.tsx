@@ -80,7 +80,6 @@ export default function RequestDetailPage() {
 
   const tabs = [
     { id: "diagnosis", label: "Diagnosis", icon: AlertTriangle },
-    { id: "options", label: "Compare", icon: GitCompareArrows },
     { id: "parts", label: "Spare Parts", icon: Package },
     { id: "impact", label: "Impact", icon: Leaf },
     { id: "fix", label: "Fix It", icon: Wrench },
