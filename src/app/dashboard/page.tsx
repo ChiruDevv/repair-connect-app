@@ -42,9 +42,7 @@ export default function DashboardPage() {
     e.preventDefault();
     e.stopPropagation();
     const res = await fetch("/api/requests/" + id, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "completed" }),
+      method: "DELETE",
     });
     if (res.ok) {
       setRequests(prev => prev.filter(r => r._id !== id));
