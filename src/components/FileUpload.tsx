@@ -42,7 +42,7 @@ export default function FileUpload({ onUpload }: FileUploadProps) {
   if (preview) {
     return (
       <div className="relative group">
-        <img src={preview} alt="Preview" className="w-full h-56 object-cover rounded-xl border border-gray-200" />
+        <img src={preview} alt="Preview" className="w-full h-56 object-cover rounded-2xl border border-emerald-950/10 shadow-sm" />
         {uploading && (
           <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -61,8 +61,8 @@ export default function FileUpload({ onUpload }: FileUploadProps) {
       onDragOver={e => { e.preventDefault(); setDragOver(true); }}
       onDragLeave={() => setDragOver(false)}
       onDrop={handleDrop}
-      className={"border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 " +
-        (dragOver ? "border-emerald-400 bg-emerald-50" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50")}
+      className={"border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 " +
+        (dragOver ? "border-emerald-400 bg-emerald-50" : "border-emerald-950/15 bg-[#fafbf8] hover:border-emerald-700/35 hover:bg-emerald-50/40")}
     >
       <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3">
         <ImageIcon size={22} className="text-gray-400" />

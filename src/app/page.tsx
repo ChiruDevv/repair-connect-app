@@ -3,21 +3,21 @@ import { ArrowRight, Upload, Search, MapPin, Leaf, Shield, Zap, ChevronRight } f
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#f7f7f3] overflow-hidden">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#f7f7f3]/85 backdrop-blur-xl border-b border-emerald-950/10">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#123f35] rounded-xl flex items-center justify-center shadow-sm">
               <Leaf size={18} className="text-white" />
             </div>
-            <span className="font-semibold text-lg text-gray-900">RepairConnect</span>
+            <span className="font-bold tracking-tight text-lg text-gray-900">RepairConnect</span>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/auth/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 px-4 py-2 transition-colors">
               Sign in
             </Link>
-            <Link href="/auth/register" className="text-sm font-medium bg-gray-900 text-white px-5 py-2.5 rounded-full hover:bg-gray-800 transition-all duration-200 shadow-sm hover:shadow-md">
+            <Link href="/auth/register" className="text-sm font-semibold forest-button text-white px-5 py-2.5 rounded-full transition-all duration-200">
               Get started
             </Link>
           </div>
@@ -25,22 +25,24 @@ export default function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section className="pt-32 pb-20 px-6">
+      <section className="relative pt-36 pb-24 px-6">
+        <div className="absolute -right-20 top-24 w-80 h-80 rounded-full border border-emerald-800/10 bg-emerald-100/30 -z-10" />
+        <div className="absolute right-6 top-32 w-72 h-72 rounded-full border border-emerald-800/10 -z-10" />
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 text-sm font-medium px-4 py-2 rounded-full mb-8 border border-emerald-100">
+          <div className="inline-flex items-center gap-2 bg-white/70 text-[#16745c] text-sm font-semibold px-4 py-2 rounded-full mb-8 border border-emerald-900/10 shadow-sm">
             <Zap size={14} />
             <span>AI-Powered Repair Intelligence</span>
           </div>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 tracking-tight leading-[1.08] mb-6">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-[#153f35] tracking-[-0.055em] leading-[1.02] mb-7">
             Your stuff is broken.
             <br />
-            <span className="text-emerald-600">Don&apos;t trash it &mdash; fix it.</span>
+            <span className="text-[#16745c]">Don&apos;t trash it &mdash; fix it.</span>
           </h1>
           <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
             Upload a photo, get instant AI diagnosis with cost estimates, DIY repair guides, and connect with nearby professionals.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/auth/register" className="group flex items-center gap-2 bg-emerald-600 text-white px-8 py-4 rounded-full text-base font-semibold hover:bg-emerald-700 transition-all duration-200 shadow-lg shadow-emerald-200 hover:shadow-xl hover:shadow-emerald-200 w-full sm:w-auto justify-center">
+            <Link href="/auth/register" className="group flex items-center gap-2 forest-button text-white px-8 py-4 rounded-full text-base font-semibold transition-all duration-200 w-full sm:w-auto justify-center">
               Start repairing
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -53,7 +55,7 @@ export default function HomePage() {
       </section>
 
       {/* Social Proof Strip */}
-      <section className="py-12 border-y border-gray-100">
+      <section className="py-8 border-y border-emerald-950/10 bg-white/50">
         <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16 text-sm text-gray-400">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
@@ -75,10 +77,10 @@ export default function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-24 px-6">
+      <section id="how-it-works" className="py-28 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-3">How it works</p>
+            <p className="eyebrow text-[#16745c] mb-3">How it works</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Three steps to repair</h2>
           </div>
           <div className="grid sm:grid-cols-3 gap-8">
@@ -103,7 +105,7 @@ export default function HomePage() {
               },
             ].map((item) => (
               <div key={item.step} className="group">
-                <div className="w-12 h-12 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center mb-5 group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-colors duration-300">
+                <div className="w-12 h-12 bg-white border border-emerald-950/10 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-colors duration-300 shadow-sm">
                   <item.icon size={22} className="text-gray-400 group-hover:text-emerald-600 transition-colors duration-300" />
                 </div>
                 <p className="text-xs font-semibold text-gray-300 mb-2">{item.step}</p>
@@ -116,10 +118,10 @@ export default function HomePage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-24 px-6 bg-gray-50">
+      <section className="py-28 px-6 bg-[#eaf1ed] border-y border-emerald-950/5">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-3">Why RepairConnect</p>
+            <p className="eyebrow text-[#16745c] mb-3">Why RepairConnect</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Repair smarter, not harder</h2>
           </div>
           <div className="grid sm:grid-cols-2 gap-6">
@@ -129,7 +131,7 @@ export default function HomePage() {
               { icon: Search, title: "DIY or professional?", desc: "Receive step-by-step repair guides with difficulty ratings and tool lists." },
               { icon: MapPin, title: "Find nearby help", desc: "Connect with verified repair shops in your area with ratings and phone numbers." },
             ].map((f) => (
-              <div key={f.title} className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-gray-200 transition-colors duration-200">
+              <div key={f.title} className="bg-white/80 rounded-2xl p-6 border border-emerald-950/10 hover:border-emerald-800/20 transition-colors duration-200 shadow-sm">
                 <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mb-4">
                   <f.icon size={20} className="text-emerald-600" />
                 </div>
@@ -142,9 +144,9 @@ export default function HomePage() {
       </section>
 
       {/* Impact Stats */}
-      <section className="py-24 px-6">
+      <section className="py-28 px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="bg-gray-900 rounded-3xl p-10 sm:p-14 text-center">
+          <div className="bg-[#123f35] rounded-[2rem] p-10 sm:p-14 text-center shadow-xl shadow-emerald-950/10">
             <p className="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-3">Sustainability impact</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-10">Every repair counts</h2>
             <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto">
@@ -159,17 +161,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-24 px-6">
+      <section className="py-28 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Start repairing today</h2>
           <p className="text-gray-500 text-lg mb-8 max-w-xl mx-auto">Upload a photo of your broken item and let AI help you fix it.</p>
-          <Link href="/auth/register" className="inline-flex items-center gap-2 bg-emerald-600 text-white px-8 py-4 rounded-full text-base font-semibold hover:bg-emerald-700 transition-all duration-200 shadow-lg shadow-emerald-200">
+          <Link href="/auth/register" className="inline-flex items-center gap-2 forest-button text-white px-8 py-4 rounded-full text-base font-semibold transition-all duration-200">
             Create free account <ArrowRight size={18} />
           </Link>
         </div>
       </section>
 
-      <footer className="border-t border-gray-100 py-10 px-6">
+      <footer className="border-t border-emerald-950/10 py-10 px-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center"><Leaf size={14} className="text-white" /></div>

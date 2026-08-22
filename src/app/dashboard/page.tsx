@@ -53,19 +53,19 @@ export default function DashboardPage() {
   const earnedBadges = badges.filter(b => stats.totalRequests >= b.threshold);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="site-canvas min-h-screen">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-white/75 backdrop-blur border-b border-emerald-950/10">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#123f35] rounded-xl flex items-center justify-center shadow-sm">
               <Leaf size={16} className="text-white" />
             </div>
             <Link href="/" className="text-gray-400 hover:text-gray-600 transition-colors"><ArrowLeft size={20} /></Link><span className="font-semibold text-gray-900">Dashboard</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/services" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">Services</Link>
-            <Link href="/new-request" className="flex items-center gap-1.5 bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors">
+            <Link href="/new-request" className="flex items-center gap-1.5 forest-button text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
               <Plus size={16} />New Repair
             </Link>
             <button onClick={() => signOut({ callbackUrl: "/auth/login" })} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -78,8 +78,9 @@ export default function DashboardPage() {
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Welcome */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome, {session?.user?.name || "there"}</h1>
-          <p className="text-gray-500 text-sm mt-1">Your repair journey at a glance</p>
+          <p className="eyebrow text-[#16745c] mb-2">Your circular dashboard</p>
+          <h1 className="text-3xl font-bold tracking-tight text-[#153f35]">Welcome, {session?.user?.name || "there"}</h1>
+          <p className="text-gray-500 text-sm mt-1">Everything you&apos;ve kept in use, in one place.</p>
         </div>
 
         {/* Stats Grid */}
@@ -90,7 +91,7 @@ export default function DashboardPage() {
             { icon: Droplets, value: stats.totalWater + "L", label: "Water Saved", color: "bg-blue-50 text-blue-600" },
             { icon: Recycle, value: stats.totalWaste + "kg", label: "Waste Prevented", color: "bg-amber-50 text-amber-600" },
           ].map(s => (
-            <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-4">
+            <div key={s.label} className="paper-card rounded-2xl p-4 sm:p-5">
               <div className={"w-9 h-9 rounded-lg flex items-center justify-center mb-3 " + s.color}>
                 <s.icon size={18} />
               </div>
@@ -102,7 +103,7 @@ export default function DashboardPage() {
 
         {/* Badges */}
         {earnedBadges.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 p-5 mb-8">
+          <div className="paper-card rounded-2xl p-5 mb-8">
             <div className="flex items-center gap-2 mb-3">
               <Award size={16} className="text-amber-500" />
               <h2 className="text-sm font-semibold text-gray-900">Badges Earned</h2>
@@ -125,19 +126,19 @@ export default function DashboardPage() {
             <span className="text-xs text-gray-400">{requests.length} total</span>
           </div>
           {requests.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-100 p-10 text-center">
+            <div className="paper-card rounded-2xl p-10 text-center">
               <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Hammer size={20} className="text-gray-300" />
               </div>
               <p className="text-gray-500 mb-4">No repair requests yet</p>
-              <Link href="/new-request" className="inline-flex items-center gap-1.5 bg-emerald-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-emerald-700 transition-colors">
+              <Link href="/new-request" className="inline-flex items-center gap-1.5 forest-button text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
                 Start your first repair <ArrowRight size={14} />
               </Link>
             </div>
           ) : (
             <div className="space-y-3">
               {requests.slice(0, 10).map(r => (
-                <Link key={r._id} href={"/request/" + r._id} className="block bg-white rounded-xl border border-gray-100 p-4 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
+                <Link key={r._id} href={"/request/" + r._id} className="block paper-card rounded-2xl p-4 hover:border-emerald-800/20 hover:-translate-y-0.5 transition-all duration-200">
                   <div className="flex items-start gap-4">
                     <img src={r.imageUrl} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0 bg-gray-100" />
                     <div className="flex-1 min-w-0">

@@ -56,9 +56,9 @@ export default function ServicesPage() {
   }, [filter]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="site-canvas min-h-screen">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-white/75 backdrop-blur border-b border-emerald-950/10">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center gap-3">
           <Link href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors">
             <ArrowLeft size={20} />
@@ -70,13 +70,13 @@ export default function ServicesPage() {
       <div className="max-w-5xl mx-auto px-6 py-6">
         {/* Location Status */}
         {locationLoading && (
-          <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6 flex items-center gap-3">
+        <div className="paper-card rounded-2xl p-4 mb-6 flex items-center gap-3">
             <Loader2 size={16} className="animate-spin text-emerald-600" />
             <p className="text-sm text-gray-500">Detecting your location...</p>
           </div>
         )}
         {location && (
-          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-6 flex items-center gap-2 text-sm text-emerald-700">
+          <div className="bg-emerald-50/80 border border-emerald-900/10 rounded-2xl p-3 mb-6 flex items-center gap-2 text-sm text-emerald-700">
             <MapPin size={15} /> Showing shops near you (sorted by proximity)
           </div>
         )}
@@ -104,7 +104,7 @@ export default function ServicesPage() {
           {categories.map(c => (
             <button key={c} onClick={() => setFilter(c)}
               className={"px-4 py-2 rounded-lg text-sm font-medium capitalize whitespace-nowrap transition-all duration-150 flex-shrink-0 " +
-                (filter === c ? "bg-gray-900 text-white" : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300")}>{c}</button>
+                (filter === c ? "bg-[#123f35] text-white shadow-sm" : "bg-white/80 text-gray-500 border border-emerald-950/10 hover:border-emerald-800/25")}>{c}</button>
           ))}
         </div>
 
@@ -116,7 +116,7 @@ export default function ServicesPage() {
         ) : (
           <div className="space-y-3">
             {services.map((s: any) => (
-              <div key={s._id} className="bg-white rounded-xl border border-gray-100 p-5 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
+              <div key={s._id} className="paper-card rounded-2xl p-5 hover:border-emerald-800/20 hover:-translate-y-0.5 transition-all duration-200">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 text-sm">{s.name}</h3>
@@ -148,14 +148,14 @@ export default function ServicesPage() {
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
                   <span className="text-xs text-gray-500">Price: {s.priceRange}</span>
                   <a href={"tel:" + s.phone}
-                    className="flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-emerald-700 transition-colors">
+                    className="flex items-center gap-1.5 forest-button text-white px-4 py-2 rounded-xl text-xs font-semibold transition-colors">
                     <Phone size={13} />Call Shop
                   </a>
                 </div>
               </div>
             ))}
             {services.length === 0 && (
-              <div className="bg-white rounded-xl border border-gray-100 p-10 text-center">
+              <div className="paper-card rounded-2xl p-10 text-center">
                 <p className="text-gray-500 text-sm">No shops found in this category</p>
               </div>
             )}

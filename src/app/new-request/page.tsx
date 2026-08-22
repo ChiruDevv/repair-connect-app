@@ -54,9 +54,9 @@ export default function NewRequestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="site-canvas min-h-screen">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-white/75 backdrop-blur border-b border-emerald-950/10">
         <div className="max-w-2xl mx-auto px-6 h-16 flex items-center gap-3">
           <Link href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors">
             <ArrowLeft size={20} />
@@ -79,7 +79,7 @@ export default function NewRequestPage() {
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-6">
+        <div className="paper-card rounded-3xl p-6 sm:p-8 space-y-6">
           {error && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl">{error}</div>}
 
           {/* Upload */}
@@ -95,7 +95,7 @@ export default function NewRequestPage() {
               {categories.map(c => (
                 <button key={c} onClick={() => setCategory(c)}
                   className={"px-4 py-2 rounded-lg text-sm font-medium capitalize border transition-all duration-150 " +
-                    (category === c ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-gray-600 border-gray-200 hover:border-gray-300")}>{c}</button>
+                    (category === c ? "bg-[#123f35] text-white border-[#123f35] shadow-sm" : "bg-white/80 text-gray-600 border-emerald-950/10 hover:border-emerald-800/25")}>{c}</button>
               ))}
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function NewRequestPage() {
 
           {/* Submit */}
           <button onClick={handleSubmit} disabled={loading || !imageUrl || !description || !category}
-            className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white py-3.5 rounded-xl font-medium hover:bg-emerald-700 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">
+            className="w-full flex items-center justify-center gap-2 forest-button text-white py-3.5 rounded-xl font-semibold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">
             {loading ? (
               <><Loader2 size={18} className="animate-spin" />Analyzing your item...</>
             ) : (

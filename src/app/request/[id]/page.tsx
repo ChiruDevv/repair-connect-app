@@ -66,9 +66,9 @@ export default function RequestDetailPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="site-canvas min-h-screen">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-white/75 backdrop-blur border-b border-emerald-950/10">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center gap-3">
           <Link href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors">
             <ArrowLeft size={20} />
@@ -80,12 +80,12 @@ export default function RequestDetailPage() {
       <div className="max-w-3xl mx-auto px-6 py-6">
         {/* Image */}
         <div className="mb-6">
-          <img src={request.imageUrl} alt="item" className="w-full h-64 object-cover rounded-xl border border-gray-200 bg-gray-100" />
+          <img src={request.imageUrl} alt="item" className="w-full h-64 object-cover rounded-2xl border border-emerald-950/10 bg-gray-100 shadow-sm" />
           <p className="text-sm text-gray-500 mt-2">{request.description}</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
+        <div className="flex bg-white/70 border border-emerald-950/10 p-1 rounded-2xl mb-6 shadow-sm">
           {tabs.map((t) => (
             <button key={t.id} onClick={() => setActiveTab(t.id)}
               className={"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 " +
@@ -101,7 +101,7 @@ export default function RequestDetailPage() {
           {activeTab === "diagnosis" && (
             <>
               {/* Repair Score */}
-              <div className="bg-white rounded-xl border border-gray-100 p-6">
+              <div className="paper-card rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-5">
                   <h3 className="font-semibold text-gray-900">Repair Score</h3>
                   <span className={"text-xs font-semibold px-3 py-1 rounded-full " + (
@@ -127,7 +127,7 @@ export default function RequestDetailPage() {
               </div>
 
               {/* Cost Comparison */}
-              <div className="bg-white rounded-xl border border-gray-100 p-6">
+              <div className="paper-card rounded-2xl p-6">
                 <h3 className="font-semibold text-gray-900 mb-4">Cost Comparison</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-emerald-50 rounded-xl p-4 text-center">
@@ -149,7 +149,7 @@ export default function RequestDetailPage() {
 
           {activeTab === "impact" && (
             <>
-              <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
+              <div className="bg-gradient-to-br from-[#16745c] to-[#123f35] rounded-2xl p-6 text-white shadow-lg shadow-emerald-950/10">
                 <h3 className="text-lg font-semibold mb-5">Environmental Impact</h3>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="bg-white/15 rounded-xl p-4 text-center">
@@ -169,7 +169,7 @@ export default function RequestDetailPage() {
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-xl border border-gray-100 p-6 text-center">
+              <div className="paper-card rounded-2xl p-6 text-center">
                 <Leaf className="mx-auto text-emerald-500 mb-3" size={28} />
                 <p className="text-sm text-gray-600">Equivalent to planting <span className="font-semibold text-emerald-600">{(imp.co2Saved / 21).toFixed(1)} trees</span> worth of carbon absorption</p>
               </div>
@@ -178,7 +178,7 @@ export default function RequestDetailPage() {
 
           {activeTab === "fix" && (
             <>
-              <div className="bg-white rounded-xl border border-gray-100 p-6">
+              <div className="paper-card rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-5">
                   <h3 className="font-semibold text-gray-900">DIY Repair Guide</h3>
                   <span className={"text-sm font-semibold " + (
@@ -218,7 +218,7 @@ export default function RequestDetailPage() {
                   </div>
                 )}
               </div>
-              <Link href="/services" className="block bg-white rounded-xl border border-gray-100 p-5 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
+              <Link href="/services" className="block paper-card rounded-2xl p-5 hover:border-emerald-800/20 hover:-translate-y-0.5 transition-all duration-200">
                 <div className="flex items-center gap-4">
                   <div className="w-11 h-11 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Wrench className="text-blue-600" size={20} />
