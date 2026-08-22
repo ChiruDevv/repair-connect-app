@@ -15,6 +15,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
     await connectToDatabase();
+
+    // Helper: extract a number from strings like "300-2000 INR", "₹500", "500-800"
+    function parseCost(val: any): number {
+      if (typeof val === 'number') return val;
+      if (typeof val === 'string') {
+        const nums = val.replace(/[₹,INRinr]/g, '').match(/d+/g);
+        if (nums && nums.length > 0) return parseInt(nums[0], 10);
+      }
+      return 0;
+    }
+    // Helper: parse an object, coercing all numeric string fields
+    function normalizeCosts(obj: any): any {
+      if (Array.isArray(obj)) return obj.map(normalizeCosts);
+      if (obj && typeof obj === 'object') {
+        const out: any = {};
+        for (const [k, v] of Object.entries(obj)) {
+          if ((k === 'estimatedCost' || k === 'estimatedRepairCost' || k === 'estimatedReplaceCost') && typeof v === 'string') {
+            out[k] = parseCost(v);
+          } else {
+            out[k] = normalizeCosts(v);
+          }
+        }
+        return out;
+      }
+      return obj;
+    }
+
     const completion = await openai.chat.completions.create({
       model: "gpt-5.6-luna",
       messages: [
@@ -31,17 +58,18 @@ export async function POST(request: NextRequest) {
     } catch {
       return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 });
     }
+    const normalizedDiagnosis = normalizeCosts(diagnosis);
     const repairRequest = await RepairRequest.create({
       user: (session.user as any).id,
       imageUrl, description, category,
       diagnosis: {
-        problem: diagnosis.problem, severity: diagnosis.severity, repairScore: diagnosis.repairScore,
-        worthRepairing: diagnosis.worthRepairing, estimatedRepairCost: diagnosis.estimatedRepairCost,
-        estimatedReplaceCost: diagnosis.estimatedReplaceCost,
+        problem: normalizedDiagnosis.problem, severity: normalizedDiagnosis.severity, repairScore: normalizedDiagnosis.repairScore,
+        worthRepairing: normalizedDiagnosis.worthRepairing, estimatedRepairCost: normalizedDiagnosis.estimatedRepairCost,
+        estimatedReplaceCost: normalizedDiagnosis.estimatedReplaceCost,
       },
-      impact: diagnosis.impact, diyGuide: diagnosis.diyGuide,
-      spareParts: diagnosis.spareParts || [],
-      repairOptions: diagnosis.repairOptions || [],
+      impact: normalizedDiagnosis.impact, diyGuide: normalizedDiagnosis.diyGuide,
+      spareParts: normalizedDiagnosis.spareParts || [],
+      repairOptions: normalizedDiagnosis.repairOptions || [],
       status: "diagnosed",
     });
     return NextResponse.json(repairRequest, { status: 201 });
