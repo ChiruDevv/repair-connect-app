@@ -1,4 +1,23 @@
-"use client";
+/*
+ * FileUpload Component
+ * 
+ * A reusable drag-and-drop image upload component.
+ * 
+ * How it works:
+ * 1. User drags an image onto the drop zone OR clicks to browse files
+ * 2. Client-side validation: only accepts image/* files
+ * 3. Shows a preview of the selected image immediately
+ * 4. Uploads the file to /api/upload (which sends it to Cloudinary)
+ * 5. Shows a spinner overlay during upload
+ * 6. Calls onUpload(cloudinaryUrl) when done so the parent can use the URL
+ * 
+ * Props:
+ * - onUpload: callback function that receives the Cloudinary URL after upload
+ * 
+ * Why client-side validation?
+ * Server also validates (5MB limit, MIME type), but client-side checks
+ * give instant feedback without making an unnecessary API call.
+ */"use client";
 
 import { useState, useRef } from "react";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
@@ -8,24 +27,32 @@ interface FileUploadProps {
 }
 
 export default function FileUpload({ onUpload }: FileUploadProps) {
+  // State: preview URL for the selected image (local blob URL)
   const [preview, setPreview] = useState<string | null>(null);
+  // State: whether a file is currently being uploaded to Cloudinary
   const [uploading, setUploading] = useState(false);
+  // State: whether a file is being dragged over the drop zone (for visual feedback)
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Handle file selection (from drag-drop or file picker)
+  // Creates a local preview URL and uploads to Cloudinary
   const handleFile = async (file: File) => {
     setUploading(true);
     setPreview(URL.createObjectURL(file));
+    // Create FormData and send to our upload API endpoint
     const formData = new FormData();
     formData.append("file", file);
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
+      // Pass the Cloudinary URL back to the parent component
       if (data.url) onUpload(data.url);
       setUploading(false);
     } catch { setUploading(false); }
   };
 
+  // Handle drag-and-drop: extract the first image file from the drop
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
@@ -33,6 +60,7 @@ export default function FileUpload({ onUpload }: FileUploadProps) {
     if (file && file.type.startsWith("image/")) handleFile(file);
   };
 
+  // Clear the selected image and reset the upload state
   const clear = (e: React.MouseEvent) => {
     e.stopPropagation();
     setPreview(null);

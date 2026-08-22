@@ -1,10 +1,35 @@
-import { NextRequest, NextResponse } from "next/server";
+/*
+ * /api/requests - Repair Request API
+ * 
+ * POST /api/requests - Create a new repair request with AI diagnosis
+ * GET  /api/requests - List all requests for the logged-in user
+ * 
+ * POST Flow (the core feature):
+ * 1. Verify user is logged in (JWT session check)
+ * 2. Accept imageUrl, description, category from the frontend
+ * 3. Send a structured prompt to OpenAI asking for JSON-formatted diagnosis
+ * 4. Parse the AI response (handle markdown code fences, validate JSON)
+ * 5. Normalize cost fields (AI sometimes returns "300-2000 INR" instead of numbers)
+ * 6. Save the complete RepairRequest to MongoDB
+ * 7. Return the saved document to the frontend
+ * 
+ * The AI prompt asks for a very specific JSON structure with:
+ * - Problem description and severity
+ * - Repair score (1-100) and whether repair is worth it
+ * - Cost estimates for repair vs replacement (in INR)
+ * - DIY guide with steps, tools, time estimate, safety notes
+ * - Spare parts list with costs and purchase links
+ * - Repair options comparison (DIY vs Local Shop vs Authorized Service)
+ * - Environmental impact estimates (CO2, water, waste)
+ */import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import openai from "@/lib/openai";
 import RepairRequest from "@/models/RepairRequest";
 
 export async function POST(request: NextRequest) {
   try {
+    // Verify the user is logged in by checking their JWT session
+    // We use dynamic import because NextAuth needs to be imported at runtime
     const { auth } = await import("@/lib/auth");
     const session = await auth();
     if (!session?.user) {
@@ -17,6 +42,8 @@ export async function POST(request: NextRequest) {
     await connectToDatabase();
 
     // Helper: extract a number from strings like "300-2000 INR", "₹500", "500-800"
+    // Helper: Extract a number from any cost format the AI might return
+    // Examples: "300-2000 INR" -> 300, "₹500" -> 500, 800 -> 800
     function parseCost(val: any): number {
       if (typeof val === 'number') return val;
       if (typeof val === 'string') {
@@ -26,6 +53,7 @@ export async function POST(request: NextRequest) {
       return 0;
     }
     // Helper: parse an object, coercing all numeric string fields
+    // Helper: Walk the entire AI response and convert cost fields to numbers
     function normalizeCosts(obj: any): any {
       if (Array.isArray(obj)) return obj.map(normalizeCosts);
       if (obj && typeof obj === 'object') {
@@ -42,6 +70,8 @@ export async function POST(request: NextRequest) {
       return obj;
     }
 
+    // Step 3: Send the prompt to AI and get the diagnosis
+    // This is where the actual AI call happens
     const completion = await openai.chat.completions.create({
       model: "gpt-5.6-luna",
       messages: [
@@ -51,6 +81,8 @@ export async function POST(request: NextRequest) {
       max_tokens: 2500,
     });
     const responseText = completion.choices[0]?.message?.content || "";
+    // Step 4: Parse the AI response into a JavaScript object
+    // AI sometimes wraps JSON in markdown code fences, so we strip those first
     let diagnosis;
     try {
       const cleaned = responseText.replace(/```json\n?/g, "").replace(/```/g, "").trim();
@@ -58,7 +90,9 @@ export async function POST(request: NextRequest) {
     } catch {
       return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 });
     }
+    // Step 5: Normalize cost fields (convert strings like "300-2000 INR" to numbers)
     const normalizedDiagnosis = normalizeCosts(diagnosis);
+    // Step 6: Save the complete repair request to MongoDB
     const repairRequest = await RepairRequest.create({
       user: (session.user as any).id,
       imageUrl, description, category,
@@ -86,6 +120,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     await connectToDatabase();
+    // Fetch all requests for this user, sorted by newest first
     const requests = await RepairRequest.find({ user: (session.user as any).id }).sort({ createdAt: -1 });
     return NextResponse.json(requests);
   } catch (error: any) {

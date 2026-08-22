@@ -1,4 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+/*
+ * /api/requests/[id] - Single Repair Request API
+ * 
+ * GET    /api/requests/[id] - Get full details of a repair request
+ * PATCH  /api/requests/[id] - Update the status of a repair request
+ * DELETE /api/requests/[id] - Delete a repair request permanently
+ * 
+ * All three operations require authentication (JWT session).
+ * The [id] in the URL is the MongoDB ObjectId of the repair request.
+ */import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import RepairRequest from "@/models/RepairRequest";
 
@@ -13,9 +22,12 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     await connectToDatabase();
+    // Extract and clean the request ID from the URL
+    // decodeURIComponent handles cases where the ID might be URL-encoded
     const { id } = await context.params;
     const cleanId = decodeURIComponent(id).trim();
     
+    // Look up the repair request by its MongoDB ObjectId
     const repairRequest = await RepairRequest.findById(cleanId);
     
     if (!repairRequest) {
@@ -64,6 +76,7 @@ export async function DELETE(
     }
     await connectToDatabase();
     const { id } = await context.params;
+    // Permanently delete the request from MongoDB
     const deleted = await RepairRequest.findByIdAndDelete(id);
     if (!deleted) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ message: "Deleted" });

@@ -1,4 +1,19 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+/*
+ * RepairRequest Model
+ * 
+ * This is the CORE data model of the application. Each repair request represents
+ * a broken item that a user uploaded for AI diagnosis.
+ * 
+ * The model stores:
+ * - User's input: image URL, description, category
+ * - AI-generated diagnosis: problem, severity, repair score, cost estimates
+ * - AI-generated guides: DIY steps, spare parts, repair options
+ * - Environmental impact: CO2, water, waste saved if repaired
+ * - Status tracking: diagnosed -> in_repair -> completed -> abandoned
+ * 
+ * The AI (GPT) returns all the diagnosis/guide data as structured JSON,
+ * which is parsed and stored directly in this document.
+ */import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface ISparePart {
   name: string;
@@ -47,11 +62,14 @@ export interface IRepairRequest extends Document {
   updatedAt: Date;
 }
 
+// Define the MongoDB schema with field types and validation
 const RepairRequestSchema = new Schema<IRepairRequest>(
   {
+    // Reference to the User who created this request
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     imageUrl: { type: String, required: true },
     description: { type: String, required: true },
+    // Category determines which repair shops are relevant for this item
     category: {
       type: String,
       enum: ["electronics", "furniture", "bicycle", "appliance", "other"],
@@ -94,6 +112,7 @@ const RepairRequestSchema = new Schema<IRepairRequest>(
         cons: String,
       },
     ],
+    // Status tracks the repair journey from diagnosis to completion
     status: {
       type: String,
       enum: ["pending", "diagnosed", "in_repair", "completed", "abandoned"],

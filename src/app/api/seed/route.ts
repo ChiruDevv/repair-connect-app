@@ -1,4 +1,25 @@
-import { NextResponse } from "next/server";
+/*
+ * POST /api/seed - Database Seeding Endpoint
+ * 
+ * Seeds the database with 20 repair shops across 6 Indian cities.
+ * 
+ * This endpoint is called manually or automatically:
+ * - Manual: curl -X POST /api/seed
+ * - Automatic: The services API auto-seeds if the collection is empty
+ * 
+ * The seed data includes shops in:
+ * - Bangalore (8 shops) - closest to most Indian users
+ * - Delhi (4 shops)
+ * - Mumbai (4 shops)
+ * - Chennai (2 shops)
+ * - Kolkata (1 shop)
+ * - Noida (1 shop)
+ * 
+ * Each shop has lat/lng coordinates for proximity-based sorting.
+ * 
+ * Safety: Only seeds if the collection is empty (existingCount === 0).
+ * This prevents accidentally wiping existing data.
+ */import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import ServiceProvider from "@/models/ServiceProvider";
 
@@ -34,6 +55,7 @@ const indianShops = [
 export async function POST() {
   try {
     await connectToDatabase();
+    // Only seed if the database is empty (prevents accidental data wipe)
     const existingCount = await ServiceProvider.countDocuments();
     if (existingCount > 0) {
       return NextResponse.json({ message: "Already seeded", count: existingCount });

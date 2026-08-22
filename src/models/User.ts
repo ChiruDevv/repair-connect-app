@@ -1,4 +1,15 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+/*
+ * User Model
+ * 
+ * Stores user account information. Each user has:
+ * - Basic profile (name, email)
+ * - Hashed password (never returned in queries by default via select: false)
+ * - Gamification (badges earned, total CO2 saved)
+ * 
+ * The password field has "select: false" which means it's excluded from
+ * all queries unless explicitly requested with .select("+password").
+ * This prevents accidental password leaks in API responses.
+ */import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IUser extends Document {
   name: string;

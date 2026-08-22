@@ -1,4 +1,16 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+/*
+ * ServiceProvider Model
+ * 
+ * Represents a repair shop/professional. These are pre-seeded in the database
+ * (not user-created) and discovered based on the user's location.
+ * 
+ * Key fields:
+ * - location: lat/lng coordinates for distance calculation (Haversine formula)
+ * - category: matches RepairRequest categories so shops are filtered by item type
+ * - specialties: detailed list of what the shop can repair
+ * - priceRange: budget indicator (one = cheap, three = expensive)
+ * - reviews: sub-schema for future community reviews feature
+ */import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IReview {
   user: mongoose.Types.ObjectId;
@@ -23,6 +35,7 @@ export interface IServiceProvider extends Document {
   updatedAt: Date;
 }
 
+// Define the MongoDB schema for repair shop data
 const ServiceProviderSchema = new Schema<IServiceProvider>(
   {
     name: {
@@ -49,6 +62,8 @@ const ServiceProviderSchema = new Schema<IServiceProvider>(
       required: [true, "State is required"],
       trim: true,
     },
+    // Geographic coordinates for proximity-based sorting
+    // Used by the Haversine formula in the services API
     location: {
       lat: { type: Number, required: true },
       lng: { type: Number, required: true },

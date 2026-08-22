@@ -1,7 +1,30 @@
-import { NextRequest, NextResponse } from "next/server";
+/*
+ * GET /api/services - Nearby Repair Shops API
+ * 
+ * Returns a list of repair shops, optionally filtered by location and category.
+ * 
+ * Query Parameters:
+ * - category: Filter by shop type (electronics, furniture, bicycle, etc.)
+ * - lat: User's latitude (from browser Geolocation API)
+ * - lng: User's longitude (from browser Geolocation API)
+ * 
+ * How location sorting works:
+ * 1. If lat/lng are provided, calculate distance to each shop using Haversine formula
+ * 2. Sort shops so same-city shops (< 50km) appear first
+ * 3. Within same-city group, sort by distance (closest first)
+ * 4. If no location provided, sort by rating (highest first)
+ * 
+ * Auto-seeding:
+ * If the database has no shops (fresh Vercel deployment), this endpoint
+ * automatically seeds 20 repair shops across 6 Indian cities.
+ * This means the services page works immediately without manual seeding.
+ */import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import ServiceProvider from "@/models/ServiceProvider";
 
+// Haversine formula: calculates distance between two points on Earth
+// Returns distance in kilometers
+// Used to sort shops by proximity to the user
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -45,6 +68,8 @@ export async function GET(request: NextRequest) {
     const lng = searchParams.get("lng");
 
     // Auto-seed if empty (for fresh Vercel deployments)
+    // Auto-seed: if no shops exist in the database, seed them now
+    // This handles fresh Vercel deployments where the DB starts empty
     const count = await ServiceProvider.countDocuments();
     if (count === 0) {
       await ServiceProvider.insertMany(autoSeedData);
@@ -57,13 +82,15 @@ export async function GET(request: NextRequest) {
 
     let services = await ServiceProvider.find(filter).sort({ rating: -1 });
 
+    // If user provided their location, sort by proximity
     if (lat && lng) {
       const userLat = parseFloat(lat);
       const userLng = parseFloat(lng);
       
       services = services.map((s: any) => {
         const shop = s.toObject();
-        shop._distance = haversineDistance(userLat, userLng, shop.location.lat, shop.location.lng);
+        // Calculate distance from user to this shop
+          shop._distance = haversineDistance(userLat, userLng, shop.location.lat, shop.location.lng);
         return shop;
       });
 
