@@ -17,10 +17,27 @@ export default function RequestDetailPage() {
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/auth/login"); return; }
     if (status === "authenticated" && params.id) {
-      fetch("/api/requests/" + params.id)
-        .then((res) => { if (!res.ok) throw new Error("Not found"); return res.json(); })
-        .then((data) => { setRequest(data); setLoading(false); })
-        .catch(() => { setRequest(null); setLoading(false); });
+      const fetchRequest = async (retries = 3) => {
+        for (let i = 0; i < retries; i++) {
+          try {
+            const res = await fetch("/api/requests/" + params.id);
+            if (res.ok) {
+              const data = await res.json();
+              setRequest(data);
+              setLoading(false);
+              return;
+            }
+            if (res.status === 401 && i < retries - 1) {
+              await new Promise(r => setTimeout(r, 500));
+              continue;
+            }
+            throw new Error("Not found");
+          } catch {
+            if (i === retries - 1) { setRequest(null); setLoading(false); }
+          }
+        }
+      };
+      fetchRequest();
     }
   }, [status, params.id, router]);
 
