@@ -16,13 +16,7 @@ export async function GET(
     const { id } = await context.params;
     const cleanId = decodeURIComponent(id).trim();
     
-    let repairRequest;
-    try {
-      repairRequest = await RepairRequest.findById(cleanId);
-    } catch {
-      const all = await RepairRequest.find({});
-      repairRequest = all.find((r: any) => r._id.toString() === cleanId);
-    }
+    const repairRequest = await RepairRequest.findById(cleanId);
     
     if (!repairRequest) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -47,8 +41,10 @@ export async function PATCH(
     await connectToDatabase();
     const { id } = await context.params;
     const body = await request.json();
+    const allowed: Record<string, any> = {};
+    if (body.status) allowed.status = body.status;
     
-    const updated = await RepairRequest.findByIdAndUpdate(id, body, { new: true });
+    const updated = await RepairRequest.findByIdAndUpdate(id, allowed, { new: true });
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(updated);
   } catch (error: any) {

@@ -12,6 +12,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    // Validate file type (images and videos only)
+    const allowedTypes = ["image/", "video/"];
+    if (!allowedTypes.some(t => file.type.startsWith(t))) {
+      return NextResponse.json({ error: "Only images and videos are allowed" }, { status: 400 });
+    }
+
+    // Validate file size (5MB limit)
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
