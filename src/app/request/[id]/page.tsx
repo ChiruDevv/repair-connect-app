@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Leaf, Wrench, AlertTriangle, Clock, Recycle, Droplets, TreePine } from "lucide-react";
+import { ArrowLeft, Leaf, Wrench, AlertTriangle, Clock, Recycle, Droplets, TreePine, Package, GitCompareArrows, CircleCheckBig, ExternalLink } from "lucide-react";
 
 export default function RequestDetailPage() {
   const { data: session, status } = useSession();
@@ -41,6 +41,16 @@ export default function RequestDetailPage() {
     }
   }, [status, params.id, router]);
 
+  const updateStatus = async (newStatus: string) => {
+    if (!request?._id) return;
+    const res = await fetch("/api/requests/" + request._id, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (res.ok) { const updated = await res.json(); setRequest(updated); }
+  };
+
   if (status === "loading" || loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
@@ -58,11 +68,23 @@ export default function RequestDetailPage() {
   const d = request.diagnosis;
   const imp = request.impact;
   const diy = request.diyGuide;
+  const spareParts = request.spareParts || [];
+  const repairOptions = request.repairOptions || [];
+
+  const statusColors: Record<string, string> = {
+    diagnosed: "bg-blue-50 text-blue-600 border-blue-100",
+    in_repair: "bg-amber-50 text-amber-600 border-amber-100",
+    completed: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    abandoned: "bg-gray-100 text-gray-500 border-gray-200",
+  };
 
   const tabs = [
     { id: "diagnosis", label: "Diagnosis", icon: AlertTriangle },
+    { id: "options", label: "Compare", icon: GitCompareArrows },
+    { id: "parts", label: "Spare Parts", icon: Package },
     { id: "impact", label: "Impact", icon: Leaf },
     { id: "fix", label: "Fix It", icon: Wrench },
+    { id: "status", label: "Status", icon: CircleCheckBig },
   ];
 
   return (
@@ -230,7 +252,8 @@ export default function RequestDetailPage() {
                 </div>
               </Link>
             </>
-          )}
+
+                    )}
         </div>
       </div>
     </div>
