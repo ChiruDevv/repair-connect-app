@@ -69,7 +69,7 @@ export default function NewRequestPage() {
         return;
       }
 
-      router.push("/request/" + data._id);
+      window.location.href = "/request/" + data._id;
     } catch (err) {
       console.error("Fetch error:", err);
       setError("Failed to submit request. Is the server running?");
