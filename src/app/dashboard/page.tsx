@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Leaf, TreePine, Droplets, Recycle, ArrowRight, Award, LogOut, Hammer } from "lucide-react";
+import { Plus, ArrowLeft, Leaf, TreePine, Droplets, Recycle, ArrowRight, Award, LogOut, Hammer } from "lucide-react";
 
 interface RepairRequest {
   _id: string;
@@ -61,7 +61,7 @@ export default function DashboardPage() {
             <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
               <Leaf size={16} className="text-white" />
             </div>
-            <span className="font-semibold text-gray-900">Dashboard</span>
+            <Link href="/" className="text-gray-400 hover:text-gray-600 transition-colors"><ArrowLeft size={20} /></Link><span className="font-semibold text-gray-900">Dashboard</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/services" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">Services</Link>
