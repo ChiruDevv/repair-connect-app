@@ -11,12 +11,12 @@ export default function ServicesPage() {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(true);
   const [locationError, setLocationError] = useState("");
 
-  const fetchServices = (lat?: number, lng?: number) => {
+  const fetchServices = (category: string, lat?: number, lng?: number) => {
     setLoading(true);
-    let url = "/api/services?category=" + filter;
+    let url = "/api/services?category=" + category;
     if (lat !== undefined && lng !== undefined) {
       url += "&lat=" + lat + "&lng=" + lng;
     }
@@ -26,31 +26,34 @@ export default function ServicesPage() {
       .catch(() => setLoading(false));
   };
 
+  // Auto-request location on mount
   useEffect(() => {
-    if (location) {
-      fetchServices(location.lat, location.lng);
-    } else {
-      fetchServices();
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation not supported");
+      setLocationLoading(false);
+      fetchServices(filter);
+      return;
     }
-  }, [filter]);
-
-  const requestLocation = () => {
-    if (!navigator.geolocation) { setLocationError("Geolocation not supported"); return; }
-    setLocationLoading(true);
-    setLocationError("");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setLocation(loc);
         setLocationLoading(false);
-        fetchServices(loc.lat, loc.lng);
+        fetchServices(filter, loc.lat, loc.lng);
       },
       () => {
         setLocationError("Location access denied. Showing all shops.");
         setLocationLoading(false);
+        fetchServices(filter);
       }
     );
-  };
+  }, []);
+
+  useEffect(() => {
+    if (location) {
+      fetchServices(filter, location.lat, location.lng);
+    }
+  }, [filter]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -65,18 +68,11 @@ export default function ServicesPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-6">
-        {/* Location Banner */}
-        {!location && (
-          <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div>
-              <p className="font-medium text-gray-900 text-sm">Find shops near you</p>
-              <p className="text-xs text-gray-500 mt-0.5">Enable location to see nearby repair services</p>
-            </div>
-            <button onClick={requestLocation} disabled={locationLoading}
-              className="flex items-center gap-2 bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 flex-shrink-0">
-              {locationLoading ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
-              {locationLoading ? "Getting..." : "Enable Location"}
-            </button>
+        {/* Location Status */}
+        {locationLoading && (
+          <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6 flex items-center gap-3">
+            <Loader2 size={16} className="animate-spin text-emerald-600" />
+            <p className="text-sm text-gray-500">Detecting your location...</p>
           </div>
         )}
         {location && (
@@ -84,7 +80,24 @@ export default function ServicesPage() {
             <MapPin size={15} /> Showing shops near you (sorted by proximity)
           </div>
         )}
-        {locationError && <p className="text-amber-600 text-sm mb-4">{locationError}</p>}
+        {locationError && (
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-6 flex items-center justify-between">
+            <p className="text-sm text-amber-700">{locationError}</p>
+            <button onClick={() => {
+              setLocationLoading(true);
+              setLocationError("");
+              navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                  const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                  setLocation(loc);
+                  setLocationLoading(false);
+                  fetchServices(filter, loc.lat, loc.lng);
+                },
+                () => { setLocationError("Location access denied."); setLocationLoading(false); }
+              );
+            }} className="text-sm font-medium text-amber-700 underline">Try again</button>
+          </div>
+        )}
 
         {/* Category Filters */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1">
