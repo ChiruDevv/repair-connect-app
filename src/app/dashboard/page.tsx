@@ -55,7 +55,7 @@ export default function DashboardPage() {
             <div className="bg-white rounded-2xl p-4 shadow-sm"><div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><Wrench size={14}/>Items Repaired</div><p className="text-2xl font-bold text-gray-900">{stats.totalItems}</p></div>
             <div className="bg-white rounded-2xl p-4 shadow-sm"><div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><TreePine size={14}/>CO2 Saved</div><p className="text-2xl font-bold text-green-600">{stats.totalCO2}kg</p></div>
             <div className="bg-white rounded-2xl p-4 shadow-sm"><div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><Droplets size={14}/>Water Saved</div><p className="text-2xl font-bold text-blue-600">{stats.totalWater}L</p></div>
-            <div className="bg-white rounded-2xl p-4 shadow-sm"><div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><DollarSign size={14}/>Money Saved</div><p className="text-2xl font-bold text-purple-600">${stats.totalMoneySaved}</p></div>
+            <div className="bg-white rounded-2xl p-4 shadow-sm"><div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><DollarSign size={14}/>Money Saved</div><p className="text-2xl font-bold text-purple-600">₹{stats.totalMoneySaved}</p></div>
           </div>
         )}
 

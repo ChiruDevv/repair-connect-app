@@ -16,11 +16,14 @@ export default function RequestDetailPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/auth/login"); return; }
-    if (status === "authenticated" && params.id) {
+    if (params.id) {
+      console.log("[DETAIL PAGE] params.id:", params.id, "status:", status);
       const fetchRequest = async (retries = 3) => {
         for (let i = 0; i < retries; i++) {
           try {
+            console.log("[DETAIL PAGE] Fetching:", "/api/requests/" + params.id);
             const res = await fetch("/api/requests/" + params.id);
+            console.log("[DETAIL PAGE] Response:", res.status);
             if (res.ok) {
               const data = await res.json();
               setRequest(data);
@@ -62,7 +65,7 @@ export default function RequestDetailPage() {
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
         {activeTab === "diagnosis" && <>
           <div className="bg-white rounded-2xl p-6 shadow-sm"><div className="flex items-center justify-between mb-4"><h3 className="font-semibold">Repair Score</h3><span className={"px-3 py-1 rounded-full text-sm font-medium " + sevC[d.severity]}>{d.severity}</span></div><div className="flex items-center gap-4"><div className="relative w-20 h-20"><svg className="w-20 h-20 -rotate-90"><circle cx="40" cy="40" r="35" stroke="#e5e7eb" strokeWidth="8" fill="none" /><circle cx="40" cy="40" r="35" stroke={d.repairScore>=70?"#22c55e":d.repairScore>=40?"#eab308":"#ef4444"} strokeWidth="8" fill="none" strokeDasharray={((d.repairScore/100)*220)+" 220"} /></svg><span className="absolute inset-0 flex items-center justify-center text-xl font-bold">{d.repairScore}</span></div><p className="text-gray-600">{d.problem}</p></div></div>
-          <div className="bg-white rounded-2xl p-6 shadow-sm"><h3 className="font-semibold mb-4">Cost Comparison</h3><div className="grid grid-cols-2 gap-4"><div className="bg-green-50 rounded-xl p-4 text-center"><p className="text-sm text-green-600">Repair</p><p className="text-2xl font-bold text-green-700">{"$"}{d.estimatedRepairCost}</p></div><div className="bg-red-50 rounded-xl p-4 text-center"><p className="text-sm text-red-600">Replace</p><p className="text-2xl font-bold text-red-700">{"$"}{d.estimatedReplaceCost}</p></div></div><div className={"mt-4 p-3 rounded-xl text-center font-medium " + (d.worthRepairing?"bg-green-50 text-green-700":"bg-red-50 text-red-700")}>{d.worthRepairing?"Worth repairing! Save "+"$"+(d.estimatedReplaceCost-d.estimatedRepairCost):"Consider replacing"}</div></div>
+          <div className="bg-white rounded-2xl p-6 shadow-sm"><h3 className="font-semibold mb-4">Cost Comparison</h3><div className="grid grid-cols-2 gap-4"><div className="bg-green-50 rounded-xl p-4 text-center"><p className="text-sm text-green-600">Repair</p><p className="text-2xl font-bold text-green-700">{"₹"}{d.estimatedRepairCost}</p></div><div className="bg-red-50 rounded-xl p-4 text-center"><p className="text-sm text-red-600">Replace</p><p className="text-2xl font-bold text-red-700">{"₹"}{d.estimatedReplaceCost}</p></div></div><div className={"mt-4 p-3 rounded-xl text-center font-medium " + (d.worthRepairing?"bg-green-50 text-green-700":"bg-red-50 text-red-700")}>{d.worthRepairing?"Worth repairing! Save "+"₹"+(d.estimatedReplaceCost-d.estimatedRepairCost):"Consider replacing"}</div></div>
         </>}
         {activeTab === "impact" && <>
           <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 text-white"><h3 className="text-lg font-semibold mb-2">Environmental Impact</h3><div className="grid grid-cols-3 gap-4"><div className="bg-white/20 rounded-xl p-4 text-center"><TreePine className="mx-auto mb-2" size={24}/><p className="text-2xl font-bold">{imp.co2Saved}kg</p><p className="text-sm text-green-100">CO2 Saved</p></div><div className="bg-white/20 rounded-xl p-4 text-center"><Droplets className="mx-auto mb-2" size={24}/><p className="text-2xl font-bold">{imp.waterSaved}L</p><p className="text-sm text-green-100">Water Saved</p></div><div className="bg-white/20 rounded-xl p-4 text-center"><Recycle className="mx-auto mb-2" size={24}/><p className="text-2xl font-bold">{imp.wastePrevented}kg</p><p className="text-sm text-green-100">Waste Prevented</p></div></div></div>

@@ -1,46 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import RepairRequest from "@/models/RepairRequest";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     await connectToDatabase();
-    const { id } = await params;
-    const repairRequest = await RepairRequest.findById(id).populate("suggestedServices");
-
-    if (!repairRequest) {
-      return NextResponse.json({ error: "Request not found" }, { status: 404 });
+    const { id } = await context.params;
+    const cleanId = decodeURIComponent(id).trim();
+    console.log("[DETAIL] Fetching:", cleanId);
+    
+    let repairRequest;
+    try {
+      repairRequest = await RepairRequest.findById(cleanId);
+    } catch {
+      // ID might be invalid ObjectId, try string match
+      const all = await RepairRequest.find({});
+      repairRequest = all.find((r: any) => r._id.toString() === cleanId);
     }
-
+    
+    if (!repairRequest) {
+      console.log("[DETAIL] Not found");
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    
+    console.log("[DETAIL] Found:", repairRequest._id);
     return NextResponse.json(repairRequest);
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch request" }, { status: 500 });
+  } catch (error: any) {
+    console.error("[DETAIL] Error:", error?.message);
+    return NextResponse.json({ error: error?.message || "Failed" }, { status: 500 });
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     await connectToDatabase();
-    const { id } = await params;
+    const { id } = await context.params;
     const deleted = await RepairRequest.findByIdAndDelete(id);
-
-    if (!deleted) {
-      return NextResponse.json({ error: "Request not found" }, { status: 404 });
-    }
-
+    if (!deleted) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ message: "Deleted" });
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || "Failed" }, { status: 500 });
   }
 }

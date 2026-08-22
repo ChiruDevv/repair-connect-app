@@ -2,22 +2,38 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import ServiceProvider from "@/models/ServiceProvider";
 
-const sampleServices = [
-  { name: "TechFix Pro", category: "electronics", address: "123 Main St", phone: "555-0101", rating: 4.8, specialties: ["Laptops", "Phones", "Tablets"], priceRange: "$$" },
-  { name: "Screen Masters", category: "electronics", address: "456 Oak Ave", phone: "555-0102", rating: 4.5, specialties: ["Screen Repair", "LCD Replacement"], priceRange: "$" },
-  { name: "Wood Workshop", category: "furniture", address: "789 Pine Rd", phone: "555-0201", rating: 4.7, specialties: ["Wooden Furniture", "Chairs", "Tables"], priceRange: "$$" },
-  { name: "Upholstery Plus", category: "furniture", address: "321 Elm St", phone: "555-0202", rating: 4.3, specialties: ["Sofas", "Cushions", "Reupholstery"], priceRange: "$$" },
-  { name: "Bike Barn", category: "bicycle", address: "654 Bike Ln", phone: "555-0301", rating: 4.9, specialties: ["All bike repairs", "Gear tuning", "Brake repair"], priceRange: "$" },
-  { name: "Cycle Hub", category: "bicycle", address: "987 Wheel Way", phone: "555-0302", rating: 4.4, specialties: ["Electric bikes", "Tire replacement"], priceRange: "$$" },
-  { name: "Appliance Doctor", category: "appliance", address: "147 Washer St", phone: "555-0401", rating: 4.6, specialties: ["Washing Machines", "Dryers", "Dishwashers"], priceRange: "$$" },
-  { name: "CoolBreeze HVAC", category: "appliance", address: "258 Air Ave", phone: "555-0402", rating: 4.2, specialties: ["Refrigerators", "AC Units", "Freezers"], priceRange: "$$" },
+const indianShops = [
+  // Electronics
+  { name: "QuickFix Electronics", category: "electronics", address: "MG Road, Delhi", phone: "+91-9876543210", rating: 4.8, specialties: ["Laptops", "Phones", "Tablets", "AC Repair"], priceRange: "\u20b9\u20b9" },
+  { name: "TechCare Solutions", category: "electronics", address: "Andheri West, Mumbai", phone: "+91-9876543211", rating: 4.5, specialties: ["TV Repair", "Washing Machine", "Refrigerator"], priceRange: "\u20b9\u20b9\u20b9" },
+  { name: "Digital Doctor", category: "electronics", address: "Koramangala, Bangalore", phone: "+91-9876543212", rating: 4.7, specialties: ["iPhone Repair", "Laptop Screen", "Data Recovery"], priceRange: "\u20b9\u20b9" },
+  { name: "Smart Service Center", category: "electronics", address: "T Nagar, Chennai", phone: "+91-9876543213", rating: 4.3, specialties: ["All Electronics", "CCTV", "Networking"], priceRange: "\u20b9" },
+  
+  // Furniture
+  { name: "WoodCraft Repairs", category: "furniture", address: "Lajpat Nagar, Delhi", phone: "+91-9876543220", rating: 4.6, specialties: ["Wooden Furniture", "Sofa Repair", "Chair Fixing"], priceRange: "\u20b9\u20b9" },
+  { name: "Furniture Care", category: "furniture", address: "Bandra, Mumbai", phone: "+91-9876543221", rating: 4.4, specialties: ["Upholstery", "Table Repair", "Bed Frame"], priceRange: "\u20b9\u20b9" },
+  { name: "Home Fix Pro", category: "furniture", address: "HSR Layout, Bangalore", phone: "+91-9876543222", rating: 4.7, specialties: ["Modular Kitchen", "Wardrobe", "Shelf Installation"], priceRange: "\u20b9\u20b9\u20b9" },
+  
+  // Bicycle
+  { name: "CycleWorld Service", category: "bicycle", address: "Connaught Place, Delhi", phone: "+91-9876543230", rating: 4.9, specialties: ["All Bicycle Repairs", "Gear Tuning", "Brake Service"], priceRange: "\u20b9" },
+  { name: "PedalPerfect", category: "bicycle", address: "Powai, Mumbai", phone: "+91-9876543231", rating: 4.5, specialties: ["Electric Bikes", "Tire Replacement", "Full Service"], priceRange: "\u20b9\u20b9" },
+  { name: "BikeZone Service", category: "bicycle", address: "Indiranagar, Bangalore", phone: "+91-9876543232", rating: 4.6, specialties: ["MTB Repair", "Suspension Service", "Wheel Truing"], priceRange: "\u20b9" },
+  
+  // Appliance
+  { name: "ApplianceMantri", category: "appliance", address: "Janakpuri, Delhi", phone: "+91-9876543240", rating: 4.7, specialties: ["Washing Machine", "Dryer", "Dishwasher"], priceRange: "\u20b9\u20b9" },
+  { name: "CoolCare AC Repair", category: "appliance", address: "Thane, Mumbai", phone: "+91-9876543241", rating: 4.4, specialties: ["AC Repair", "Refrigerator", "Freezer"], priceRange: "\u20b9\u20b9" },
+  { name: "HomeAppliance Hub", category: "appliance", address: "Whitefield, Bangalore", phone: "+91-9876543242", rating: 4.6, specialties: ["Microwave", "Water Purifier", "Gas Stove"], priceRange: "\u20b9" },
+  
+  // General
+  { name: "FixIt All", category: "other", address: "Sector 18, Noida", phone: "+91-9876543250", rating: 4.3, specialties: ["General Repairs", "Key Making", "Lock Repair"], priceRange: "\u20b9" },
+  { name: "HandyMan Services", category: "other", address: "Salt Lake, Kolkata", phone: "+91-9876543251", rating: 4.5, specialties: ["Plumbing", "Electrical", "Carpentry"], priceRange: "\u20b9\u20b9" },
 ];
 
 export async function POST() {
   try {
     await connectToDatabase();
     await ServiceProvider.deleteMany({});
-    const services = await ServiceProvider.insertMany(sampleServices);
+    const services = await ServiceProvider.insertMany(indianShops);
     return NextResponse.json({ message: "Seeded", count: services.length });
   } catch (error) {
     return NextResponse.json({ error: "Failed to seed" }, { status: 500 });
