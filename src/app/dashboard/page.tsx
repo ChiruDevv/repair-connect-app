@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, ArrowLeft, Leaf, TreePine, Droplets, Recycle, ArrowRight, Award, LogOut, Hammer } from "lucide-react";
+import { Plus, ArrowLeft, Leaf, TreePine, Droplets, Recycle, ArrowRight, Award, LogOut, Hammer, CheckCircle, CircleCheckBig } from "lucide-react";
 
 interface RepairRequest {
   _id: string;
@@ -37,6 +37,20 @@ export default function DashboardPage() {
       }).catch(() => setLoading(false));
     }
   }, [status, router]);
+
+  const markAsRepaired = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const res = await fetch("/api/requests/" + id, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "completed" }),
+    });
+    if (res.ok) {
+      setRequests(prev => prev.filter(r => r._id !== id));
+      setStats(prev => ({ ...prev, totalRequests: prev.totalRequests - 1 }));
+    }
+  };
 
   if (status === "loading" || loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -163,7 +177,11 @@ export default function DashboardPage() {
                         )}
                       </div>
                     </div>
-                    <ArrowRight size={16} className="text-gray-300 flex-shrink-0 mt-1" />
+                    <button onClick={(e) => markAsRepaired(e, r._id)}
+                        className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-emerald-100 transition-colors flex-shrink-0"
+                        title="Mark as repaired">
+                        <CircleCheckBig size={14} /> Repaired
+                      </button>
                   </div>
                 </Link>
               ))}
