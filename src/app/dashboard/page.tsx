@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [requests, setRequests] = useState<RepairRequest[]>([]);
-  const [stats, setStats] = useState({ totalRequests: 0, totalCO2: 0, totalWater: 0, totalWaste: 0 });
+  const [stats, setStats] = useState({ totalItems: 0, totalCO2: 0, totalWater: 0, totalWaste: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function DashboardPage() {
     });
     if (res.ok) {
       setRequests(prev => prev.filter(r => r._id !== id));
-      setStats(prev => ({ ...prev, totalRequests: prev.totalRequests - 1 }));
+      setStats(prev => ({ ...prev, totalItems: prev.totalItems - 1 }));
     }
   };
 
@@ -64,7 +64,7 @@ export default function DashboardPage() {
     { threshold: 10, icon: TreePine, label: "Eco Warrior", color: "text-green-600 bg-green-50" },
   ];
 
-  const earnedBadges = badges.filter(b => stats.totalRequests >= b.threshold);
+  const earnedBadges = badges.filter(b => stats.totalItems >= b.threshold);
 
   return (
     <div className="site-canvas min-h-screen">
@@ -100,7 +100,7 @@ export default function DashboardPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: Hammer, value: stats.totalRequests, label: "Repairs", color: "bg-emerald-50 text-emerald-600" },
+            { icon: Hammer, value: stats.totalItems, label: "Repairs", color: "bg-emerald-50 text-emerald-600" },
             { icon: TreePine, value: stats.totalCO2 + "kg", label: "CO\u2082 Saved", color: "bg-green-50 text-green-600" },
             { icon: Droplets, value: stats.totalWater + "L", label: "Water Saved", color: "bg-blue-50 text-blue-600" },
             { icon: Recycle, value: stats.totalWaste + "kg", label: "Waste Prevented", color: "bg-amber-50 text-amber-600" },
