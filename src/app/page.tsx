@@ -3,7 +3,7 @@ import { ArrowRight, Upload, Search, MapPin, Leaf, Shield, Zap, ChevronRight } f
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#f7f7f3] overflow-hidden">
+    <div className="site-canvas min-h-screen overflow-hidden">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#f7f7f3]/85 backdrop-blur-xl border-b border-emerald-950/10">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
