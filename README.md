@@ -50,7 +50,7 @@ AI-powered repair intelligence platform. Upload a photo of a broken item, get in
 ### Setup
 
 ```bash
-git clone https://github.com/ChiruDevv/mern-next-app.git
+git clone https://github.com/ChiruDevv/repair-connect-app.git
 cd mern-next-app
 npm install
 ```
