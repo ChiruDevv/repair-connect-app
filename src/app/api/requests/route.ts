@@ -27,17 +27,14 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: "system",
-          content: 'You are an expert repair technician. Analyze the image and description of a damaged item. Return ONLY valid JSON (no markdown, no code fences) with this structure: {"problem":"description","severity":"Low|Medium|High|Critical","repairScore":0-100,"worthRepairing":boolean,"estimatedRepairCost":number,"estimatedReplaceCost":number,"impact":{"co2Saved":number,"waterSaved":number,"wastePrevented":number},"diyGuide":{"difficulty":"Beginner|Intermediate|Expert","estimatedTime":"string","tools":["list"],"steps":["list"],"safetyNotes":"string"}}',
+          content: 'You are an expert repair technician. Based on the description, provide a diagnosis. Return ONLY valid JSON (no markdown, no code fences): {"problem":"description","severity":"Low|Medium|High|Critical","repairScore":0-100,"worthRepairing":boolean,"estimatedRepairCost":number,"estimatedReplaceCost":number,"impact":{"co2Saved":number,"waterSaved":number,"wastePrevented":number},"diyGuide":{"difficulty":"Beginner|Intermediate|Expert","estimatedTime":"string","tools":["list"],"steps":["list"],"safetyNotes":"string"}}',
         },
         {
           role: "user",
-          content: [
-            { type: "image_url", image_url: { url: imageUrl } },
-            { type: "text", text: "Category: " + category + "\nDescription: " + description + "\n\nAnalyze this damaged item." },
-          ],
+          content: "Category: " + category + "\nDescription: " + description + "\n\nAnalyze this damaged item and provide diagnosis.",
         },
       ],
-      max_tokens: 1500,
+      max_tokens: 1000,
       temperature: 0.7,
     });
 
