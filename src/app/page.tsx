@@ -146,7 +146,7 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto">
           <div className="bg-gray-900 rounded-3xl p-10 sm:p-14 text-center">
             <p className="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-3">Sustainability impact</p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-10">Every repair cEvery repair counts</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-10">Every repair counts</h2>
             <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto">
               {[{ value: "12kg", label: "CO2 saved per repair" }, { value: "3.2L", label: "Water conserved" }, { value: "0.8kg", label: "Waste prevented" }].map((s) => (
                 <div key={s.label}>
