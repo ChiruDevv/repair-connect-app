@@ -49,8 +49,13 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    const { auth } = await import("@/lib/auth");
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     await connectToDatabase();
-    const requests = await RepairRequest.find({}).sort({ createdAt: -1 });
+    const requests = await RepairRequest.find({ user: (session.user as any).id }).sort({ createdAt: -1 });
     return NextResponse.json(requests);
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Failed" }, { status: 500 });
