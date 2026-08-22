@@ -27,34 +27,13 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: "system",
-          content: `You are an expert repair technician. Analyze the image and description of a damaged item.
-Return ONLY valid JSON (no markdown, no code fences):
-{
-  "problem": "Clear description of the issue",
-  "severity": "Low" | "Medium" | "High" | "Critical",
-  "repairScore": number 0-100,
-  "worthRepairing": boolean,
-  "estimatedRepairCost": number in USD,
-  "estimatedReplaceCost": number in USD,
-  "impact": {
-    "co2Saved": number kg,
-    "waterSaved": number liters,
-    "wastePrevented": number kg
-  },
-  "diyGuide": {
-    "difficulty": "Beginner" | "Intermediate" | "Expert",
-    "estimatedTime": "string",
-    "tools": ["tools needed"],
-    "steps": ["step 1", "step 2"],
-    "safetyNotes": "Safety warnings"
-  }
-}`,
+          content: 'You are an expert repair technician. Analyze the image and description of a damaged item. Return ONLY valid JSON (no markdown, no code fences) with this structure: {"problem":"description","severity":"Low|Medium|High|Critical","repairScore":0-100,"worthRepairing":boolean,"estimatedRepairCost":number,"estimatedReplaceCost":number,"impact":{"co2Saved":number,"waterSaved":number,"wastePrevented":number},"diyGuide":{"difficulty":"Beginner|Intermediate|Expert","estimatedTime":"string","tools":["list"],"steps":["list"],"safetyNotes":"string"}}',
         },
         {
           role: "user",
           content: [
             { type: "image_url", image_url: { url: imageUrl } },
-            { type: "text", text: `Category: ${category}\nDescription: ${description}\n\nAnalyze this damaged item.` },
+            { type: "text", text: "Category: " + category + "\nDescription: " + description + "\n\nAnalyze this damaged item." },
           ],
         },
       ],
@@ -63,12 +42,16 @@ Return ONLY valid JSON (no markdown, no code fences):
     });
 
     const responseText = completion.choices[0]?.message?.content || "";
+
     let diagnosis;
     try {
-      const cleaned = responseText.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+      const cleaned = responseText.replace(/```json\n?/g, "").replace(/```/g, "").trim();
       diagnosis = JSON.parse(cleaned);
     } catch {
-      return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to parse AI response" },
+        { status: 500 }
+      );
     }
 
     const repairRequest = await RepairRequest.create({
@@ -90,8 +73,11 @@ Return ONLY valid JSON (no markdown, no code fences):
     });
 
     return NextResponse.json(repairRequest, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to create repair request" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || "Failed to create repair request" },
+      { status: 500 }
+    );
   }
 }
 
@@ -108,7 +94,10 @@ export async function GET() {
       .populate("suggestedServices");
 
     return NextResponse.json(requests);
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch requests" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || "Failed to fetch requests" },
+      { status: 500 }
+    );
   }
 }
