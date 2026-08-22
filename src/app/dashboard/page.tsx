@@ -4,13 +4,24 @@ import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Leaf, TreePine, Droplets, Recycle, DollarSign, Award, LogOut, Wrench } from "lucide-react";
+import { Plus, Leaf, TreePine, Droplets, Recycle, ArrowRight, Award, LogOut, Hammer } from "lucide-react";
+
+interface RepairRequest {
+  _id: string;
+  description: string;
+  imageUrl: string;
+  category: string;
+  status: string;
+  diagnosis?: { problem: string; severity: string; repairScore: number; worthRepairing: boolean };
+  impact?: { co2Saved: number; waterSaved: number; wastePrevented: number };
+  createdAt: string;
+}
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [requests, setRequests] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [requests, setRequests] = useState<RepairRequest[]>([]);
+  const [stats, setStats] = useState({ totalRequests: 0, totalCO2: 0, totalWater: 0, totalWaste: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,83 +30,139 @@ export default function DashboardPage() {
       Promise.all([
         fetch("/api/requests").then(r => r.json()),
         fetch("/api/impact/stats").then(r => r.json()),
-      ]).then(([reqs, st]) => { setRequests(reqs); setStats(st); setLoading(false); });
+      ]).then(([reqs, s]) => {
+        setRequests(reqs);
+        setStats(s);
+        setLoading(false);
+      }).catch(() => setLoading(false));
     }
   }, [status, router]);
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-2 border-green-600 border-t-transparent" /></div>;
+  if (status === "loading" || loading) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
-  const badgeEmoji: Record<string, string> = {
-    "First Fix": "🔧", "DIY Master": "🛠️", "Eco Warrior": "🌱",
-    "Carbon Cutter": "🌍", "Money Saver": "💰",
-  };
+  const badges = [
+    { threshold: 1, icon: Leaf, label: "First Repair", color: "text-emerald-600 bg-emerald-50" },
+    { threshold: 5, icon: Hammer, label: "DIY Starter", color: "text-amber-600 bg-amber-50" },
+    { threshold: 10, icon: TreePine, label: "Eco Warrior", color: "text-green-600 bg-green-50" },
+  ];
+
+  const earnedBadges = badges.filter(b => stats.totalRequests >= b.threshold);
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-sm text-gray-500">Welcome, {session?.user?.name}</p>
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+              <Leaf size={16} className="text-white" />
+            </div>
+            <span className="font-semibold text-gray-900">Dashboard</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/new-request" className="bg-green-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-green-700 flex items-center gap-2">
-              <Plus size={18} /> New Request
+          <div className="flex items-center gap-4">
+            <Link href="/services" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">Services</Link>
+            <Link href="/new-request" className="flex items-center gap-1.5 bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors">
+              <Plus size={16} />New Repair
             </Link>
-            <button onClick={() => signOut({ callbackUrl: "/" })} className="text-gray-400 hover:text-gray-600"><LogOut size={20} /></button>
+            <button onClick={() => signOut()} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {/* Stats Cards */}
-        {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl p-4 shadow-sm"><div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><Wrench size={14}/>Items Repaired</div><p className="text-2xl font-bold text-gray-900">{stats.totalItems}</p></div>
-            <div className="bg-white rounded-2xl p-4 shadow-sm"><div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><TreePine size={14}/>CO2 Saved</div><p className="text-2xl font-bold text-green-600">{stats.totalCO2}kg</p></div>
-            <div className="bg-white rounded-2xl p-4 shadow-sm"><div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><Droplets size={14}/>Water Saved</div><p className="text-2xl font-bold text-blue-600">{stats.totalWater}L</p></div>
-            <div className="bg-white rounded-2xl p-4 shadow-sm"><div className="flex items-center gap-2 text-gray-500 text-sm mb-1"><DollarSign size={14}/>Money Saved</div><p className="text-2xl font-bold text-purple-600">₹{stats.totalMoneySaved}</p></div>
-          </div>
-        )}
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        {/* Welcome */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Welcome, {session?.user?.name || "there"}</h1>
+          <p className="text-gray-500 text-sm mt-1">Your repair journey at a glance</p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          {[
+            { icon: Hammer, value: stats.totalRequests, label: "Repairs", color: "bg-emerald-50 text-emerald-600" },
+            { icon: TreePine, value: stats.totalCO2 + "kg", label: "CO\u2082 Saved", color: "bg-green-50 text-green-600" },
+            { icon: Droplets, value: stats.totalWater + "L", label: "Water Saved", color: "bg-blue-50 text-blue-600" },
+            { icon: Recycle, value: stats.totalWaste + "kg", label: "Waste Prevented", color: "bg-amber-50 text-amber-600" },
+          ].map(s => (
+            <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-4">
+              <div className={"w-9 h-9 rounded-lg flex items-center justify-center mb-3 " + s.color}>
+                <s.icon size={18} />
+              </div>
+              <p className="text-xl font-bold text-gray-900">{s.value}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </div>
 
         {/* Badges */}
-        {stats && stats.badges.length > 0 && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2"><Award size={18}/>Badges Earned</h3>
+        {earnedBadges.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-100 p-5 mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <Award size={16} className="text-amber-500" />
+              <h2 className="text-sm font-semibold text-gray-900">Badges Earned</h2>
+            </div>
             <div className="flex flex-wrap gap-3">
-              {stats.badges.map((b: string) => (
-                <div key={b} className="bg-green-50 text-green-700 px-4 py-2 rounded-full font-medium flex items-center gap-2">
-                  {badgeEmoji[b] || "🏅"} {b}
+              {earnedBadges.map((b, i) => (
+                <div key={i} className={"flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium " + b.color}>
+                  <b.icon size={14} />
+                  {b.label}
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Requests List */}
+        {/* Recent Requests */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Repair Requests</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-gray-900">Recent Requests</h2>
+            <span className="text-xs text-gray-400">{requests.length} total</span>
+          </div>
           {requests.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 shadow-sm text-center">
-              <Wrench className="mx-auto text-gray-300 mb-3" size={48}/>
+            <div className="bg-white rounded-xl border border-gray-100 p-10 text-center">
+              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Hammer size={20} className="text-gray-300" />
+              </div>
               <p className="text-gray-500 mb-4">No repair requests yet</p>
-              <Link href="/new-request" className="bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 inline-flex items-center gap-2">
-                <Plus size={18}/> Upload Your First Item
+              <Link href="/new-request" className="inline-flex items-center gap-1.5 bg-emerald-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-emerald-700 transition-colors">
+                Start your first repair <ArrowRight size={14} />
               </Link>
             </div>
           ) : (
-            <div className="grid gap-4">
-              {requests.map((r) => (
-                <Link key={r._id} href={"/request/" + r._id} className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md flex gap-4 items-center">
-                  <img src={r.imageUrl} alt="" className="w-20 h-20 object-cover rounded-xl flex-shrink-0"/>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{r.description}</p>
-                    <p className="text-sm text-gray-500">{r.category} · {new Date(r.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-medium text-green-600">Score: {r.diagnosis?.repairScore}/100</p>
-                    <span className={"text-xs px-2 py-1 rounded-full " + (r.status==="diagnosed"?"bg-green-100 text-green-700":"bg-gray-100 text-gray-600")}>{r.status}</span>
+            <div className="space-y-3">
+              {requests.slice(0, 10).map(r => (
+                <Link key={r._id} href={"/request/" + r._id} className="block bg-white rounded-xl border border-gray-100 p-4 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
+                  <div className="flex items-start gap-4">
+                    <img src={r.imageUrl} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0 bg-gray-100" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-medium text-gray-900 text-sm truncate">{r.diagnosis?.problem || r.description}</h3>
+                        <span className={"text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 " +
+                          (r.status === "completed" ? "bg-emerald-50 text-emerald-600" :
+                           r.status === "diagnosed" ? "bg-blue-50 text-blue-600" :
+                           "bg-gray-100 text-gray-500")}>{r.status}</span>
+                      </div>
+                      <p className="text-xs text-gray-400 truncate">{r.description}</p>
+                      <div className="flex items-center gap-3 mt-2">
+                        <span className="text-xs text-gray-400 capitalize">{r.category}</span>
+                        {r.diagnosis?.repairScore != null && (
+                          <span className={"text-xs font-medium px-2 py-0.5 rounded-full " +
+                            (r.diagnosis.repairScore >= 70 ? "bg-emerald-50 text-emerald-600" :
+                             r.diagnosis.repairScore >= 40 ? "bg-amber-50 text-amber-600" :
+                             "bg-red-50 text-red-600")}>Score: {r.diagnosis.repairScore}</span>
+                        )}
+                        {r.impact && (
+                          <span className="text-xs text-green-600">{r.impact.co2Saved}kg CO2 saved</span>
+                        )}
+                      </div>
+                    </div>
+                    <ArrowRight size={16} className="text-gray-300 flex-shrink-0 mt-1" />
                   </div>
                 </Link>
               ))}

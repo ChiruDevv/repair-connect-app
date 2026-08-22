@@ -21,90 +21,109 @@ export default function ServicesPage() {
   }, [filter]);
 
   const requestLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation not supported");
-      return;
-    }
+    if (!navigator.geolocation) { setLocationError("Geolocation not supported"); return; }
     setLocationLoading(true);
     setLocationError("");
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocationLoading(false);
-      },
-      () => {
-        setLocationError("Location access denied. Showing all shops.");
-        setLocationLoading(false);
-      }
+      (pos) => { setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocationLoading(false); },
+      () => { setLocationError("Location access denied. Showing all shops."); setLocationLoading(false); }
     );
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/dashboard" className="text-gray-400 hover:text-gray-600"><ArrowLeft size={20} /></Link>
-          <h1 className="text-xl font-bold text-gray-900">Repair Services</h1>
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center gap-3">
+          <Link href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors">
+            <ArrowLeft size={20} />
+          </Link>
+          <h1 className="font-semibold text-gray-900">Repair Services</h1>
         </div>
       </div>
-      <div className="max-w-5xl mx-auto px-4 py-6">
+
+      <div className="max-w-5xl mx-auto px-6 py-6">
         {/* Location Banner */}
         {!location && (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 flex items-center justify-between">
+          <div className="bg-white border border-gray-100 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <p className="font-medium text-blue-900">Find shops near you</p>
-              <p className="text-sm text-blue-600">Grant location access to see nearby repair services</p>
+              <p className="font-medium text-gray-900 text-sm">Find shops near you</p>
+              <p className="text-xs text-gray-500 mt-0.5">Grant location access to see nearby repair services</p>
             </div>
             <button onClick={requestLocation} disabled={locationLoading}
-              className="bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50">
-              {locationLoading ? <Loader2 size={16} className="animate-spin" /> : <Navigation size={16} />}
+              className="flex items-center gap-2 bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 flex-shrink-0">
+              {locationLoading ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
               {locationLoading ? "Getting..." : "Enable Location"}
             </button>
           </div>
         )}
         {location && (
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-3 mb-6 flex items-center gap-2 text-sm text-green-700">
-            <MapPin size={16} /> Location enabled — showing shops near you
+          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-6 flex items-center gap-2 text-sm text-emerald-700">
+            <MapPin size={15} /> Location enabled — showing shops near you
           </div>
         )}
-        {locationError && <p className="text-orange-600 text-sm mb-4">{locationError}</p>}
+        {locationError && <p className="text-amber-600 text-sm mb-4">{locationError}</p>}
 
         {/* Category Filters */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1">
           {categories.map(c => (
             <button key={c} onClick={() => setFilter(c)}
-              className={"px-4 py-2 rounded-full font-medium capitalize whitespace-nowrap " + (filter===c ? "bg-green-600 text-white" : "bg-white text-gray-600 border")}>{c}</button>
+              className={"px-4 py-2 rounded-lg text-sm font-medium capitalize whitespace-nowrap transition-all duration-150 flex-shrink-0 " +
+                (filter === c ? "bg-gray-900 text-white" : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300")}>{c}</button>
           ))}
         </div>
 
         {/* Shop Cards */}
-        {loading ? <div className="text-center py-12 text-gray-400">Loading...</div> : (
-          <div className="grid gap-4">
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          </div>
+        ) : (
+          <div className="space-y-3">
             {services.map(s => (
-              <div key={s._id} className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{s.name}</h3>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star size={14} className="text-yellow-400 fill-yellow-400"/>
-                      <span className="text-sm font-medium">{s.rating}</span>
-                      <span className="text-gray-300 mx-1">|</span>
-                      <span className="text-sm bg-gray-100 px-2 py-0.5 rounded capitalize">{s.category}</span>
+              <div key={s._id} className="bg-white rounded-xl border border-gray-100 p-5 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 text-sm">{s.name}</h3>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <div className="flex items-center gap-1">
+                        <Star size={13} className="text-amber-400 fill-amber-400" />
+                        <span className="text-xs font-medium text-gray-700">{s.rating}</span>
+                      </div>
+                      <span className="text-gray-200">|</span>
+                      <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded capitalize">{s.category}</span>
                     </div>
-                    <div className="flex items-center gap-1 mt-1 text-sm text-gray-500"><MapPin size={14}/>{s.address}</div>
-                    <div className="flex items-center gap-1 mt-1 text-sm text-gray-500"><Phone size={14}/>{s.phone}</div>
+                    <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500">
+                      <MapPin size={13} className="flex-shrink-0" />
+                      <span className="truncate">{s.address}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500">
+                      <Phone size={13} className="flex-shrink-0" />
+                      <span>{s.phone}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {s.specialties.map((sp: string, i: number) => (<span key={i} className="bg-green-50 text-green-700 text-xs px-2 py-1 rounded-full">{sp}</span>))}
-                </div>
-                <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                  <span className="text-sm text-gray-500">Price: {s.priceRange}</span>
-                  <a href={"tel:" + s.phone} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-700">Call Shop</a>
+                {s.specialties && s.specialties.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {s.specialties.map((sp: string, i: number) => (
+                      <span key={i} className="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-medium">{sp}</span>
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+                  <span className="text-xs text-gray-500">Price: {s.priceRange}</span>
+                  <a href={"tel:" + s.phone}
+                    className="flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-emerald-700 transition-colors">
+                    <Phone size={13} />Call Shop
+                  </a>
                 </div>
               </div>
             ))}
-            {services.length === 0 && <p className="text-center text-gray-400 py-8">No shops found in this category</p>}
+            {services.length === 0 && (
+              <div className="bg-white rounded-xl border border-gray-100 p-10 text-center">
+                <p className="text-gray-500 text-sm">No shops found in this category</p>
+              </div>
+            )}
           </div>
         )}
       </div>

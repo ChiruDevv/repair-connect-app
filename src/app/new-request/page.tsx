@@ -4,16 +4,10 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft, Loader2, ArrowRight } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
-import { Wrench, ArrowLeft } from "lucide-react";
 
-const categories = [
-  { value: "electronics", label: "Electronics", icon: "💻" },
-  { value: "furniture", label: "Furniture", icon: "🪑" },
-  { value: "bicycle", label: "Bicycle", icon: "🚲" },
-  { value: "appliance", label: "Appliance", icon: "🏠" },
-  { value: "other", label: "Other", icon: "📦" },
-];
+const categories = ["electronics", "furniture", "bicycle", "appliance", "other"];
 
 export default function NewRequestPage() {
   const { data: session, status } = useSession();
@@ -24,138 +18,108 @@ export default function NewRequestPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  if (status === "loading") {
+  if (status === "unauthenticated") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-green-600 border-t-transparent" />
-      </div>
-    );
-  }
-
-  if (status === "unauthenticated" || !session) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Sign in required</h2>
-          <p className="text-gray-600 mb-6">You need to be signed in to create a repair request.</p>
-          <Link href="/auth/login" className="bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 inline-block">
-            Sign In
-          </Link>
+          <p className="text-gray-600 mb-4">Sign in required to create a repair request.</p>
+          <Link href="/auth/login" className="text-emerald-600 font-medium hover:text-emerald-700">Sign in</Link>
         </div>
       </div>
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
-    if (!imageUrl) { setError("Please upload a photo or video"); return; }
-    if (!description) { setError("Please describe the issue"); return; }
-    if (!category) { setError("Please select a category"); return; }
-
+  const handleSubmit = async () => {
+    if (!imageUrl || !description || !category) { setError("Please upload a photo, select a category, and describe the issue."); return; }
     setLoading(true);
+    setError("");
     try {
       const res = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageUrl, description, category }),
       });
-
+      if (!res.ok) { const d = await res.json(); setError(d.error || "Failed to create repair request"); setLoading(false); return; }
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Something went wrong. Check the console for details.");
-        console.error("API Error:", data);
-        return;
-      }
-
       window.location.href = "/request/" + data._id;
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Failed to submit request. Is the server running?");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("Something went wrong. Please try again."); setLoading(false); }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/dashboard" className="text-gray-400 hover:text-gray-600">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-2xl mx-auto px-6 h-16 flex items-center gap-3">
+          <Link href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">New Repair Request</h1>
+          <h1 className="font-semibold text-gray-900">New Repair Request</h1>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="max-w-2xl mx-auto px-6 py-8">
+        {/* Progress Steps */}
+        <div className="flex items-center gap-3 mb-8">
+          {[{ n: 1, l: "Upload" }, { n: 2, l: "Describe" }, { n: 3, l: "Analyze" }].map((s, i) => (
+            <div key={s.n} className="flex items-center gap-3 flex-1">
+              <div className={"w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-colors " +
+                (imageUrl && category && description ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-500")}>{s.n}</div>
+              <span className="text-sm text-gray-500 hidden sm:block">{s.l}</span>
+              {i < 2 && <div className="flex-1 h-px bg-gray-200 mx-2" />}
+            </div>
+          ))}
+        </div>
+
+        {/* Form */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-6">
+          {error && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl">{error}</div>}
+
+          {/* Upload */}
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-2">
-              Photo or Video of the Issue
-            </label>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Photo of the damaged item</label>
             <FileUpload onUpload={setImageUrl} />
           </div>
 
+          {/* Category */}
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-2">
-              Category
-            </label>
-            <div className="grid grid-cols-5 gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.value}
-                  type="button"
-                  onClick={() => setCategory(cat.value)}
-                  className={`p-3 rounded-xl border-2 text-center transition-all ${
-                    category === cat.value
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <div className="text-2xl">{cat.icon}</div>
-                  <div className="text-xs font-bold text-gray-900 mt-1">{cat.label}</div>
-                </button>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Category</label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map(c => (
+                <button key={c} onClick={() => setCategory(c)}
+                  className={"px-4 py-2 rounded-lg text-sm font-medium capitalize border transition-all duration-150 " +
+                    (category === c ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-gray-600 border-gray-200 hover:border-gray-300")}>{c}</button>
               ))}
             </div>
           </div>
 
+          {/* Description */}
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-2">
-              Describe the Issue
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none resize-none text-gray-900"
-              placeholder="What's wrong? When did it start? Any error messages?"
-            />
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Describe the problem</label>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white transition-colors resize-none"
+              placeholder="e.g. Screen flickering, hinge broken, water damage..." />
           </div>
 
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm">{error}</div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading || !imageUrl}
-            className="w-full bg-green-600 text-white py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
+          {/* Submit */}
+          <button onClick={handleSubmit} disabled={loading || !imageUrl || !description || !category}
+            className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white py-3.5 rounded-xl font-medium hover:bg-emerald-700 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">
             {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                Analyzing with AI...
-              </>
+              <><Loader2 size={18} className="animate-spin" />Analyzing your item...</>
             ) : (
-              <>
-                <Wrench size={20} />
-                Analyze My Item
-              </>
+              <>Analyze My Item<ArrowRight size={16} /></>
             )}
           </button>
-        </form>
+        </div>
+
+        <p className="text-center text-xs text-gray-400 mt-4">AI will analyze the issue, estimate costs, and suggest repair options</p>
       </div>
     </div>
   );

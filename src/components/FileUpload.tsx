@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, X, Image, Video } from "lucide-react";
+import { Upload, X, Image as ImageIcon } from "lucide-react";
 
 interface FileUploadProps {
   onUpload: (url: string) => void;
@@ -11,100 +11,66 @@ export default function FileUpload({ onUpload }: FileUploadProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
-    // Show preview
-    const url = URL.createObjectURL(file);
-    setPreview(url);
-
-    // Upload to Cloudinary
     setUploading(true);
+    setPreview(URL.createObjectURL(file));
+    const formData = new FormData();
+    formData.append("file", file);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
-      if (data.url) {
-        onUpload(data.url);
-      }
-    } catch {
-      alert("Upload failed");
-      setPreview(null);
-    } finally {
-      setUploading(false);
-    }
+      if (data.url) onUpload(data.url);
+    } catch { setUploading(false); }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file && (file.type.startsWith("image/") || file.type.startsWith("video/"))) {
-      handleFile(file);
-    }
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) handleFile(file);
   };
 
-  const clearPreview = () => {
+  const clear = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setPreview(null);
-    if (fileRef.current) fileRef.current.value = "";
+    onUpload("");
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   if (preview) {
     return (
-      <div className="relative">
-        {preview.includes("video") ? (
-          <video src={preview} className="w-full h-64 object-cover rounded-xl" controls />
-        ) : (
-          <img src={preview} alt="Preview" className="w-full h-64 object-cover rounded-xl" />
-        )}
-        <button
-          onClick={clearPreview}
-          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
-        >
-          <X size={16} />
-        </button>
+      <div className="relative group">
+        <img src={preview} alt="Preview" className="w-full h-56 object-cover rounded-xl border border-gray-200" />
         {uploading && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
-            <div className="text-white font-medium">Uploading...</div>
+          <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
           </div>
         )}
+        <button onClick={clear} className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+          <X size={16} />
+        </button>
       </div>
     );
   }
 
   return (
     <div
-      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onClick={() => inputRef.current?.click()}
+      onDragOver={e => { e.preventDefault(); setDragOver(true); }}
       onDragLeave={() => setDragOver(false)}
       onDrop={handleDrop}
-      onClick={() => fileRef.current?.click()}
-      className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-        dragOver ? "border-green-500 bg-green-50" : "border-gray-300 hover:border-green-400"
-      }`}
+      className={"border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 " +
+        (dragOver ? "border-emerald-400 bg-emerald-50" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50")}
     >
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*,video/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleFile(file);
-        }}
-      />
-      <Upload className="mx-auto text-gray-400 mb-3" size={40} />
-      <p className="text-gray-600 font-medium">Drop your photo or video here</p>
-      <p className="text-gray-400 text-sm mt-1">or click to browse</p>
-      <div className="flex justify-center gap-4 mt-3 text-gray-400 text-xs">
-        <span className="flex items-center gap-1"><Image size={12} /> Photos</span>
-        <span className="flex items-center gap-1"><Video size={12} /> Videos</span>
+      <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+        <ImageIcon size={22} className="text-gray-400" />
       </div>
+      <p className="text-sm font-medium text-gray-700">Drop a photo here, or click to browse</p>
+      <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP up to 10MB</p>
+      <input ref={inputRef} type="file" accept="image/*" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
     </div>
   );
 }
