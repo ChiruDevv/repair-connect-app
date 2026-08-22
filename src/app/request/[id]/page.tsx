@@ -253,6 +253,85 @@ export default function RequestDetailPage() {
             </>
 
                     )}
+
+          {activeTab === "parts" && (
+            <>
+              <div className="paper-card rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-5">
+                  <Package className="text-emerald-600" size={18} />
+                  <h3 className="font-semibold text-gray-900">Spare Parts</h3>
+                </div>
+                {spareParts.length > 0 ? (
+                  <div className="space-y-3">
+                    {spareParts.map((part: any, i: number) => (
+                      <div key={i} className="bg-gray-50 rounded-xl p-4 border border-emerald-950/5">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 text-sm">{part.name}</p>
+                            <p className="text-xs text-gray-500 mt-1">Available at: {part.availableAt}</p>
+                          </div>
+                          <div className="text-right flex-shrink-0 ml-3">
+                            <p className="font-bold text-emerald-700">{"₹"}{part.estimatedCost}</p>
+                          </div>
+                        </div>
+                        {part.link && (
+                          <a href={part.link} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-emerald-600 mt-2 hover:text-emerald-700 font-medium">
+                            <ExternalLink size={12} />Search online
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Package className="mx-auto text-gray-300 mb-3" size={28} />
+                    <p className="text-sm text-gray-500">No spare parts data available yet.</p>
+                    <p className="text-xs text-gray-400 mt-1">Spare parts will appear here when the AI generates them.</p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {activeTab === "status" && (
+            <>
+              <div className="paper-card rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-5">
+                  <CircleCheckBig className="text-emerald-600" size={18} />
+                  <h3 className="font-semibold text-gray-900">Repair Status</h3>
+                </div>
+                <div className="mb-5">
+                  <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">Current Status</p>
+                  <span className={"inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full border " + (statusColors[request.status] || statusColors.diagnosed)}>
+                    {(request.status || "diagnosed").replace("_", " ").replace(/w/g, (l: string) => l.toUpperCase())}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3">Update Status</p>
+                  {[
+                    { key: "diagnosed", label: "Diagnosed", desc: "Item has been analyzed" },
+                    { key: "in_repair", label: "In Repair", desc: "Currently being repaired" },
+                    { key: "completed", label: "Repaired", desc: "Repair is complete" },
+                    { key: "abandoned", label: "Abandoned", desc: "Item will not be repaired" },
+                  ].map((s) => (
+                    <button key={s.key} onClick={() => updateStatus(s.key)}
+                      disabled={request.status === s.key}
+                      className={"w-full text-left p-3 rounded-xl border transition-all duration-200 flex items-center justify-between " +
+                        (request.status === s.key
+                          ? "bg-emerald-50 border-emerald-200"
+                          : "bg-white hover:bg-gray-50 border-emerald-950/10")}>
+                      <div>
+                        <p className={"text-sm font-medium " + (request.status === s.key ? "text-emerald-700" : "text-gray-900")}>{s.label}</p>
+                        <p className="text-xs text-gray-500">{s.desc}</p>
+                      </div>
+                      {request.status === s.key && <CircleCheckBig size={16} className="text-emerald-600" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

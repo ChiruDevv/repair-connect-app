@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         { role: "system", content: 'You are a repair expert. Return only valid JSON: {"problem":"description","severity":"Low|Medium|High|Critical","repairScore":0-100,"worthRepairing":true/false,"estimatedRepairCost":number in INR,"estimatedReplaceCost":number in INR,"impact":{"co2Saved":number,"waterSaved":number,"wastePrevented":number},"diyGuide":{"difficulty":"Beginner|Intermediate|Expert","estimatedTime":"string","tools":["list"],"steps":["step1","step2"],"safetyNotes":"string"},"spareParts":[{"name":"part name","estimatedCost":number in INR,"availableAt":"where to buy","link":"search URL on amazon.in or flipkart.com"}],"repairOptions":[{"option":"DIY|Local Shop|Authorized Service","estimatedCost":number in INR,"timeEstimate":"string","pros":"string","cons":"string"}]}' },
         { role: "user", content: "Category: " + category + " | Issue: " + description },
       ],
-      max_tokens: 1200,
+      max_tokens: 2500,
     });
     const responseText = completion.choices[0]?.message?.content || "";
     let diagnosis;
