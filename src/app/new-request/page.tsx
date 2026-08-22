@@ -105,7 +105,7 @@ export default function NewRequestPage() {
             <label className="block text-sm font-semibold text-gray-900 mb-2">Describe the problem</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white transition-colors resize-none"
-              placeholder="e.g. Screen flickering, hinge broken, water damage..." />
+              placeholder="Be specific for better results — e.g. “Laptop screen flickering after drop” or “Bicycle chain keeps slipping”" />
           </div>
 
           {/* Submit */}
@@ -119,7 +119,7 @@ export default function NewRequestPage() {
           </button>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-4">AI will analyze the issue, estimate costs, and suggest repair options</p>
+        <p className="text-center text-xs text-gray-400 mt-4">Our AI will analyze the damage, compare repair vs. replacement costs, suggest spare parts, and provide a step-by-step DIY guide</p>
       </div>
     </div>
   );

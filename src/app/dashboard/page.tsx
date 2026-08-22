@@ -98,7 +98,7 @@ export default function DashboardPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: Hammer, value: stats.totalItems, label: "Repairs", color: "bg-emerald-50 text-emerald-600" },
+            { icon: Hammer, value: stats.totalItems, label: "Total Repairs", color: "bg-emerald-50 text-emerald-600" },
             { icon: TreePine, value: stats.totalCO2 + "kg", label: "CO\u2082 Saved", color: "bg-green-50 text-green-600" },
             { icon: Droplets, value: stats.totalWater + "L", label: "Water Saved", color: "bg-blue-50 text-blue-600" },
             { icon: Recycle, value: stats.totalWaste + "kg", label: "Waste Prevented", color: "bg-amber-50 text-amber-600" },

@@ -41,7 +41,7 @@ export default function RegisterPage() {
           </div>
           <p className="eyebrow text-[#16745c] mb-2">RepairConnect</p>
           <h1 className="text-3xl font-bold tracking-tight text-[#153f35]">Create your account</h1>
-          <p className="text-sm text-gray-500 mt-1">Start repairing, not replacing</p>
+          <p className="text-sm text-gray-500 mt-1">Create a free account to diagnose, track, and repair your broken items</p>
         </div>
 
         <form onSubmit={handleSubmit} className="paper-card rounded-3xl p-6 space-y-4">

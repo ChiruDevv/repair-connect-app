@@ -42,7 +42,7 @@ export default function HomePage() {
             <span className="text-[#16745c]">Don&apos;t trash it &mdash; fix it.</span>
           </h1>
           <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Upload a photo, get instant AI diagnosis with cost estimates, DIY repair guides, and connect with nearby professionals.
+            Upload a photo of any broken item — electronics, furniture, bikes, appliances — and get instant AI-powered diagnosis, repair cost estimates, step-by-step DIY guides, and nearby shop recommendations.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/auth/register" className="group flex items-center gap-2 forest-button text-white px-8 py-4 rounded-full text-base font-semibold transition-all duration-200 w-full sm:w-auto justify-center">
@@ -85,6 +85,7 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <p className="eyebrow text-[#16745c] mb-3">How it works</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Three steps to repair</h2>
+            <p className="text-gray-500 mt-3">From broken item to fixed — in under a minute.</p>
           </div>
           <div className="grid sm:grid-cols-3 gap-8">
             {[
@@ -92,19 +93,19 @@ export default function HomePage() {
                 step: "01",
                 icon: Upload,
                 title: "Upload a photo",
-                desc: "Snap a picture of the damaged item and describe the problem in a few words.",
+                desc: "Take a clear photo of the broken item and write a short description of what’s wrong — like “screen flickering” or “hinge snapped.”",
               },
               {
                 step: "02",
                 icon: Search,
                 title: "Get AI diagnosis",
-                desc: "Our AI identifies the issue, estimates repair costs, and suggests DIY fixes or professionals.",
+                desc: "Our AI instantly analyzes the damage, estimates repair vs. replacement costs, suggests spare parts, and generates a step-by-step DIY repair guide.",
               },
               {
                 step: "03",
                 icon: MapPin,
                 title: "Find repair help",
-                desc: "Browse nearby repair shops, compare options, and get your item fixed.",
+                desc: "Discover verified repair shops near you, compare prices and ratings, and call directly to get your item fixed.",
               },
             ].map((item) => (
               <div key={item.step} className="group">
@@ -126,13 +127,14 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <p className="eyebrow text-[#16745c] mb-3">Why RepairConnect</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Repair smarter, not harder</h2>
+            <p className="text-gray-500 mt-3 max-w-lg mx-auto">Everything you need to decide whether to fix, replace, or find help — all in one place.</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-6">
             {[
-              { icon: Shield, title: "Is it worth fixing?", desc: "Get a repair score and cost comparison so you never waste money on hopeless items." },
+              { icon: Shield, title: "Is it worth fixing?", desc: "Every item gets a repair score from 1–100. See exactly how much repairing costs compared to buying new, so you always make the smart call." },
               { icon: Leaf, title: "Track your impact", desc: "See how many kg of CO₂ you've saved, water conserved, and waste prevented." },
-              { icon: Search, title: "DIY or professional?", desc: "Receive step-by-step repair guides with difficulty ratings and tool lists." },
-              { icon: MapPin, title: "Find nearby help", desc: "Connect with verified repair shops in your area with ratings and phone numbers." },
+              { icon: Search, title: "DIY or professional?", desc: "Each diagnosis includes a detailed DIY guide with difficulty level, estimated time, required tools, and numbered step-by-step instructions." },
+              { icon: MapPin, title: "Find nearby help", desc: "Browse verified repair shops filtered by your location and item category. See ratings, specialties, price ranges, and call with one tap." },
             ].map((f) => (
               <div key={f.title} className="bg-white/80 rounded-2xl p-6 border border-emerald-950/10 hover:border-emerald-800/20 transition-colors duration-200 shadow-sm">
                 <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mb-4">
@@ -153,7 +155,7 @@ export default function HomePage() {
             <p className="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-3">Sustainability impact</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-10">Every repair counts</h2>
             <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto">
-              {[{ value: "12kg", label: "CO2 saved per repair" }, { value: "3.2L", label: "Water conserved" }, { value: "0.8kg", label: "Waste prevented" }].map((s) => (
+              {[{ value: "12kg", label: "CO₂ saved per repair on average" }, { value: "3.2L", label: "Water conserved per repair" }, { value: "0.8kg", label: "Waste kept out of landfills" }].map((s) => (
                 <div key={s.label}>
                   <p className="text-2xl sm:text-3xl font-bold text-emerald-400">{s.value}</p>
                   <p className="text-xs text-gray-500 mt-1">{s.label}</p>
@@ -167,7 +169,7 @@ export default function HomePage() {
       <section className="py-28 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Start repairing today</h2>
-          <p className="text-gray-500 text-lg mb-8 max-w-xl mx-auto">Upload a photo of your broken item and let AI help you fix it.</p>
+          <p className="text-gray-500 text-lg mb-8 max-w-xl mx-auto">Join thousands of people choosing repair over replacement. Upload a photo, get your free AI diagnosis, and start fixing today.</p>
           <Link href="/auth/register" className="inline-flex items-center gap-2 forest-button text-white px-8 py-4 rounded-full text-base font-semibold transition-all duration-200">
             Create free account <ArrowRight size={18} />
           </Link>
@@ -180,7 +182,7 @@ export default function HomePage() {
             <div className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center"><Leaf size={14} className="text-white" /></div>
             <span className="font-medium text-sm text-gray-900">RepairConnect</span>
           </div>
-          <p className="text-xs text-gray-400">Repair, don’t replace.</p>
+          <p className="text-xs text-gray-400">AI-powered repair intelligence. Built for a sustainable future.</p>
         </div>
       </footer>
     </div>

@@ -32,7 +32,7 @@ export default function LoginPage() {
           </div>
           <p className="eyebrow text-[#16745c] mb-2">RepairConnect</p>
           <h1 className="text-3xl font-bold tracking-tight text-[#153f35]">Welcome back</h1>
-          <p className="text-sm text-gray-500 mt-1">Sign in to your account</p>
+          <p className="text-sm text-gray-500 mt-1">Sign in to access your repair dashboard and history</p>
         </div>
 
         <form onSubmit={handleSubmit} className="paper-card rounded-3xl p-6 space-y-4">

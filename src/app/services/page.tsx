@@ -30,7 +30,7 @@ export default function ServicesPage() {
     if (!navigator.geolocation) { setLocationError("Geolocation not supported"); setLocationLoading(false); fetchServices(filter); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => { const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }; setLocation(loc); setLocationLoading(false); fetchServices(filter, loc.lat, loc.lng); },
-      () => { setLocationError("Location access denied. Showing all shops."); setLocationLoading(false); fetchServices(filter); }
+      () => { setLocationError("Location access denied. Showing all available shops — enable location for nearby results."); setLocationLoading(false); fetchServices(filter); }
     );
   }, []);
 
@@ -58,7 +58,7 @@ export default function ServicesPage() {
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors"><ArrowLeft size={20} /></Link>
-            <h1 className="font-semibold text-gray-900">Repair Services</h1>
+            <div><h1 className="font-semibold text-gray-900">Repair Services</h1><p className="text-xs text-gray-500">Find trusted repair shops near you</p></div>
           </div>
           {services.length > 0 && (
             <button onClick={() => { setCompareMode(!compareMode); setSelected([]); }}
@@ -126,7 +126,7 @@ export default function ServicesPage() {
                 {!compareMode && (<a href={"tel:" + s.phone} className="flex items-center gap-1.5 forest-button text-white px-4 py-2 rounded-xl text-xs font-semibold"><Phone size={13} />Call Shop</a>)}
               </div>
             </div>
-          ))}{services.length === 0 && (<div className="paper-card rounded-2xl p-10 text-center"><p className="text-gray-500 text-sm">No shops found</p></div>)}</div>
+          ))}{services.length === 0 && (<div className="paper-card rounded-2xl p-10 text-center"><p className="text-gray-500 text-sm">No repair shops found for this category nearby. Try a different category or check back later.</p></div>)}</div>
         )}
       </div>
     </div>
