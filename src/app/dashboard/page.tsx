@@ -68,7 +68,7 @@ export default function DashboardPage() {
             <Link href="/new-request" className="flex items-center gap-1.5 bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors">
               <Plus size={16} />New Repair
             </Link>
-            <button onClick={() => signOut()} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <button onClick={() => signOut({ callbackUrl: "/auth/login" })} className="text-gray-400 hover:text-gray-600 transition-colors">
               <LogOut size={18} />
             </button>
           </div>

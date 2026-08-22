@@ -18,10 +18,10 @@ export async function POST(request: NextRequest) {
     const completion = await openai.chat.completions.create({
       model: "gpt-5.6-luna",
       messages: [
-        { role: "system", content: 'You are a repair expert. Return only valid JSON: {"problem":"description","severity":"Low|Medium|High|Critical","repairScore":0-100,"worthRepairing":true/false,"estimatedRepairCost":number in INR,"estimatedReplaceCost":number in INR,"impact":{"co2Saved":number,"waterSaved":number,"wastePrevented":number},"diyGuide":{"difficulty":"Beginner|Intermediate|Expert","estimatedTime":"string","tools":["list"],"steps":["step1","step2"],"safetyNotes":"string"}}' },
+        { role: "system", content: 'You are a repair expert. Return only valid JSON: {"problem":"description","severity":"Low|Medium|High|Critical","repairScore":0-100,"worthRepairing":true/false,"estimatedRepairCost":number in INR,"estimatedReplaceCost":number in INR,"impact":{"co2Saved":number,"waterSaved":number,"wastePrevented":number},"diyGuide":{"difficulty":"Beginner|Intermediate|Expert","estimatedTime":"string","tools":["list"],"steps":["step1","step2"],"safetyNotes":"string"},"spareParts":[{"name":"part name","estimatedCost":number in INR,"availableAt":"where to buy","link":"search URL on amazon.in or flipkart.com"}],"repairOptions":[{"option":"DIY|Local Shop|Authorized Service","estimatedCost":number in INR,"timeEstimate":"string","pros":"string","cons":"string"}]}' },
         { role: "user", content: "Category: " + category + " | Issue: " + description },
       ],
-      max_tokens: 800,
+      max_tokens: 1200,
     });
     const responseText = completion.choices[0]?.message?.content || "";
     let diagnosis;
@@ -39,7 +39,10 @@ export async function POST(request: NextRequest) {
         worthRepairing: diagnosis.worthRepairing, estimatedRepairCost: diagnosis.estimatedRepairCost,
         estimatedReplaceCost: diagnosis.estimatedReplaceCost,
       },
-      impact: diagnosis.impact, diyGuide: diagnosis.diyGuide, status: "diagnosed",
+      impact: diagnosis.impact, diyGuide: diagnosis.diyGuide,
+      spareParts: diagnosis.spareParts || [],
+      repairOptions: diagnosis.repairOptions || [],
+      status: "diagnosed",
     });
     return NextResponse.json(repairRequest, { status: 201 });
   } catch (error: any) {
