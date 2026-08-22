@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     await connectToDatabase();
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5.6-luna",
       messages: [
         {
           role: "system",
