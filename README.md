@@ -4,10 +4,17 @@ Full stack application using MongoDB, Next.js (App Router), and TypeScript.
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15 + React 19 + Tailwind CSS v4
-- **API**: Next.js API Routes (App Router)
-- **Database**: MongoDB with Mongoose
-- **Language**: TypeScript
+| Category       | Technology               | Version  |
+| -------------- | ------------------------ | -------- |
+| Framework      | Next.js (App Router)     | 15.x     |
+| UI Library     | React                    | 19.x     |
+| Language       | TypeScript               | 5.x      |
+| Styling        | Tailwind CSS             | 4.x      |
+| Database       | MongoDB                  | —        |
+| ODM            | Mongoose                 | 8.x      |
+| Linting        | ESLint + eslint-config-next | 9.x   |
+| Build Tool     | PostCSS                  | 8.x      |
+| Runtime        | Node.js                  | 18+      |
 
 ## Getting Started
 
