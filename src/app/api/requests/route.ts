@@ -25,6 +25,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import openai from "@/lib/openai";
+import { generateFallbackDiagnosis, DiagnosisResult } from "@/lib/diagnosis";
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,18 +41,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    // Helper: extract a number from strings like "300-2000 INR", "₹500", "500-800"
     // Helper: Extract a number from any cost format the AI might return
     // Examples: "300-2000 INR" -> 300, "₹500" -> 500, 800 -> 800
     function parseCost(val: any): number {
-      if (typeof val === 'number') return val;
+      if (typeof val === 'number') return isNaN(val) ? 0 : val;
       if (typeof val === 'string') {
-        const nums = val.replace(/[₹,INRinr]/g, '').match(/d+/g);
+        const nums = val.replace(/[₹,INRinr]/g, '').match(/\d+/g);
         if (nums && nums.length > 0) return parseInt(nums[0], 10);
       }
       return 0;
     }
-    // Helper: parse an object, coercing all numeric string fields
+
     // Helper: Walk the entire AI response and convert cost fields to numbers
     function normalizeCosts(obj: any): any {
       if (Array.isArray(obj)) return obj.map(normalizeCosts);
@@ -69,28 +69,42 @@ export async function POST(request: NextRequest) {
       return obj;
     }
 
-    // Step 3: Send the prompt to AI and get the diagnosis
-    // This is where the actual AI call happens
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5.6-luna",
-      messages: [
-        { role: "system", content: 'You are a repair expert. Return only valid JSON: {"problem":"description","severity":"Low|Medium|High|Critical","repairScore":0-100,"worthRepairing":true/false,"estimatedRepairCost":number in INR,"estimatedReplaceCost":number in INR,"impact":{"co2Saved":number,"waterSaved":number,"wastePrevented":number},"diyGuide":{"difficulty":"Beginner|Intermediate|Expert","estimatedTime":"string","tools":["list"],"steps":["step1","step2"],"safetyNotes":"string"},"spareParts":[{"name":"part name","estimatedCost":number in INR,"availableAt":"where to buy","link":"search URL on amazon.in or flipkart.com"}],"repairOptions":[{"option":"DIY|Local Shop|Authorized Service","estimatedCost":number in INR,"timeEstimate":"string","pros":"string","cons":"string"}]}' },
-        { role: "user", content: "Category: " + category + " | Issue: " + description },
-      ],
-      max_tokens: 2500,
-    });
-    const responseText = completion.choices[0]?.message?.content || "";
-    // Step 4: Parse the AI response into a JavaScript object
-    // AI sometimes wraps JSON in markdown code fences, so we strip those first
-    let diagnosis;
+    // Step 3: Get AI diagnosis (with automatic fallback if AI gateway is unavailable/503)
+    let diagnosis: DiagnosisResult;
     try {
+      if (!process.env.OPENAI_API_KEY) {
+        throw new Error("OPENAI_API_KEY not configured");
+      }
+
+      // 15-second timeout for the AI completion
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      const completion = await openai.chat.completions.create(
+        {
+          model: "gpt-5.6-luna",
+          messages: [
+            {
+              role: "system",
+              content:
+                'You are a repair expert. Return only valid JSON: {"problem":"description","severity":"Low|Medium|High|Critical","repairScore":0-100,"worthRepairing":true/false,"estimatedRepairCost":number in INR,"estimatedReplaceCost":number in INR,"impact":{"co2Saved":number,"waterSaved":number,"wastePrevented":number},"diyGuide":{"difficulty":"Beginner|Intermediate|Expert","estimatedTime":"string","tools":["list"],"steps":["step1","step2"],"safetyNotes":"string"},"spareParts":[{"name":"part name","estimatedCost":number in INR,"availableAt":"where to buy","link":"search URL on amazon.in or flipkart.com"}],"repairOptions":[{"option":"DIY|Local Shop|Authorized Service","estimatedCost":number in INR,"timeEstimate":"string","pros":"string","cons":"string"}]}',
+            },
+            { role: "user", content: `Category: ${category} | Issue: ${description}` },
+          ],
+          max_tokens: 2500,
+        },
+        { signal: controller.signal }
+      );
+      clearTimeout(timeoutId);
+
+      const responseText = completion.choices[0]?.message?.content || "";
       const cleaned = responseText.replace(/```json\n?/g, "").replace(/```/g, "").trim();
-      diagnosis = JSON.parse(cleaned);
-    } catch {
-      return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 });
+      const parsed = JSON.parse(cleaned);
+      diagnosis = normalizeCosts(parsed);
+    } catch (aiError: any) {
+      console.warn("AI generation failed or service unavailable, using smart diagnosis fallback:", aiError?.message);
+      diagnosis = generateFallbackDiagnosis(category, description);
     }
-    // Step 5: Normalize cost fields (convert strings like "300-2000 INR" to numbers)
-    const normalizedDiagnosis = normalizeCosts(diagnosis);
 
     // Step 6: Save the complete repair request to Supabase (PostgreSQL)
     const { data: repairRequest, error } = await supabase
@@ -101,17 +115,17 @@ export async function POST(request: NextRequest) {
         description,
         category,
         diagnosis: {
-          problem: normalizedDiagnosis.problem,
-          severity: normalizedDiagnosis.severity,
-          repairScore: normalizedDiagnosis.repairScore,
-          worthRepairing: normalizedDiagnosis.worthRepairing,
-          estimatedRepairCost: normalizedDiagnosis.estimatedRepairCost,
-          estimatedReplaceCost: normalizedDiagnosis.estimatedReplaceCost,
+          problem: diagnosis.problem,
+          severity: diagnosis.severity,
+          repairScore: diagnosis.repairScore,
+          worthRepairing: diagnosis.worthRepairing,
+          estimatedRepairCost: diagnosis.estimatedRepairCost,
+          estimatedReplaceCost: diagnosis.estimatedReplaceCost,
         },
-        impact: normalizedDiagnosis.impact,
-        diy_guide: normalizedDiagnosis.diyGuide,
-        spare_parts: normalizedDiagnosis.spareParts || [],
-        repair_options: normalizedDiagnosis.repairOptions || [],
+        impact: diagnosis.impact,
+        diy_guide: diagnosis.diyGuide,
+        spare_parts: diagnosis.spareParts || [],
+        repair_options: diagnosis.repairOptions || [],
         status: "diagnosed",
       })
       .select()
@@ -137,6 +151,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 });
   } catch (error: any) {
+    console.error("Request POST error:", error);
     return NextResponse.json({ error: error?.message || "Failed" }, { status: 500 });
   }
 }
