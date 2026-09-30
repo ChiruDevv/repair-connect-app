@@ -8,14 +8,14 @@
  * 2. Check password length (minimum 6 characters)
  * 3. Check if email is already registered
  * 4. Hash password with bcrypt (12 salt rounds)
- * 5. Save user to MongoDB
+ * 5. Save user to Supabase (PostgreSQL)
  * 6. Return user object (without password)
  * 
  * This is a public endpoint - no authentication required.
- */import { NextRequest, NextResponse } from "next/server";
+ */
+import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { connectToDatabase } from "@/lib/mongodb";
-import User from "@/models/User";
+import { supabase } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,10 +37,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await connectToDatabase();
-
     // Step 3: Check if this email is already registered
-    const existingUser = await User.findOne({ email });
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", email.toLowerCase())
+      .single();
+
     if (existingUser) {
       return NextResponse.json(
         { error: "Email already registered" },
@@ -52,17 +55,29 @@ export async function POST(request: NextRequest) {
     // The plain text password is NEVER stored in the database
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Step 5: Save the new user to MongoDB
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
+    // Step 5: Save the new user to Supabase
+    const { data: user, error } = await supabase
+      .from("users")
+      .insert({
+        name,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+      })
+      .select("id, name, email")
+      .single();
+
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return NextResponse.json(
+        { error: "Failed to create account" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       {
         message: "Account created successfully",
-        user: { id: user._id, name: user.name, email: user.email },
+        user: { id: user.id, name: user.name, email: user.email },
       },
       { status: 201 }
     );

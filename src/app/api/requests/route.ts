@@ -10,7 +10,7 @@
  * 3. Send a structured prompt to OpenAI asking for JSON-formatted diagnosis
  * 4. Parse the AI response (handle markdown code fences, validate JSON)
  * 5. Normalize cost fields (AI sometimes returns "300-2000 INR" instead of numbers)
- * 6. Save the complete RepairRequest to MongoDB
+ * 6. Save the complete RepairRequest to Supabase (PostgreSQL)
  * 7. Return the saved document to the frontend
  * 
  * The AI prompt asks for a very specific JSON structure with:
@@ -21,10 +21,10 @@
  * - Spare parts list with costs and purchase links
  * - Repair options comparison (DIY vs Local Shop vs Authorized Service)
  * - Environmental impact estimates (CO2, water, waste)
- */import { NextRequest, NextResponse } from "next/server";
-import { connectToDatabase } from "@/lib/mongodb";
+ */
+import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 import openai from "@/lib/openai";
-import RepairRequest from "@/models/RepairRequest";
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,7 +39,6 @@ export async function POST(request: NextRequest) {
     if (!imageUrl || !description || !category) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
-    await connectToDatabase();
 
     // Helper: extract a number from strings like "300-2000 INR", "₹500", "500-800"
     // Helper: Extract a number from any cost format the AI might return
@@ -92,21 +91,51 @@ export async function POST(request: NextRequest) {
     }
     // Step 5: Normalize cost fields (convert strings like "300-2000 INR" to numbers)
     const normalizedDiagnosis = normalizeCosts(diagnosis);
-    // Step 6: Save the complete repair request to MongoDB
-    const repairRequest = await RepairRequest.create({
-      user: (session.user as any).id,
-      imageUrl, description, category,
-      diagnosis: {
-        problem: normalizedDiagnosis.problem, severity: normalizedDiagnosis.severity, repairScore: normalizedDiagnosis.repairScore,
-        worthRepairing: normalizedDiagnosis.worthRepairing, estimatedRepairCost: normalizedDiagnosis.estimatedRepairCost,
-        estimatedReplaceCost: normalizedDiagnosis.estimatedReplaceCost,
-      },
-      impact: normalizedDiagnosis.impact, diyGuide: normalizedDiagnosis.diyGuide,
-      spareParts: normalizedDiagnosis.spareParts || [],
-      repairOptions: normalizedDiagnosis.repairOptions || [],
-      status: "diagnosed",
-    });
-    return NextResponse.json(repairRequest, { status: 201 });
+
+    // Step 6: Save the complete repair request to Supabase (PostgreSQL)
+    const { data: repairRequest, error } = await supabase
+      .from("repair_requests")
+      .insert({
+        user_id: (session.user as any).id,
+        image_url: imageUrl,
+        description,
+        category,
+        diagnosis: {
+          problem: normalizedDiagnosis.problem,
+          severity: normalizedDiagnosis.severity,
+          repairScore: normalizedDiagnosis.repairScore,
+          worthRepairing: normalizedDiagnosis.worthRepairing,
+          estimatedRepairCost: normalizedDiagnosis.estimatedRepairCost,
+          estimatedReplaceCost: normalizedDiagnosis.estimatedReplaceCost,
+        },
+        impact: normalizedDiagnosis.impact,
+        diy_guide: normalizedDiagnosis.diyGuide,
+        spare_parts: normalizedDiagnosis.spareParts || [],
+        repair_options: normalizedDiagnosis.repairOptions || [],
+        status: "diagnosed",
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return NextResponse.json({ error: "Failed to save request" }, { status: 500 });
+    }
+
+    // Transform snake_case DB columns back to camelCase for the frontend
+    const response = {
+      ...repairRequest,
+      _id: repairRequest.id,
+      imageUrl: repairRequest.image_url,
+      user: repairRequest.user_id,
+      diyGuide: repairRequest.diy_guide,
+      spareParts: repairRequest.spare_parts,
+      repairOptions: repairRequest.repair_options,
+      createdAt: repairRequest.created_at,
+      updatedAt: repairRequest.updated_at,
+    };
+
+    return NextResponse.json(response, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Failed" }, { status: 500 });
   }
@@ -119,10 +148,32 @@ export async function GET() {
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    await connectToDatabase();
+
     // Fetch all requests for this user, sorted by newest first
-    const requests = await RepairRequest.find({ user: (session.user as any).id }).sort({ createdAt: -1 });
-    return NextResponse.json(requests);
+    const { data: requests, error } = await supabase
+      .from("repair_requests")
+      .select("*")
+      .eq("user_id", (session.user as any).id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return NextResponse.json({ error: "Failed to fetch requests" }, { status: 500 });
+    }
+
+    // Transform snake_case DB columns to camelCase for frontend compatibility
+    const transformed = (requests || []).map((r: any) => ({
+      ...r,
+      _id: r.id,
+      imageUrl: r.image_url,
+      user: r.user_id,
+      diyGuide: r.diy_guide,
+      spareParts: r.spare_parts,
+      repairOptions: r.repair_options,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    }));
+
+    return NextResponse.json(transformed);
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Failed" }, { status: 500 });
   }

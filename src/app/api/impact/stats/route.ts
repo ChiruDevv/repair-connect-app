@@ -17,10 +17,10 @@
  * - "Eco Warrior": 10+ repairs
  * - "Carbon Cutter": 50+ kg CO2 saved
  * - "Money Saver": 500+ INR saved
- */import { NextResponse } from "next/server";
+ */
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { connectToDatabase } from "@/lib/mongodb";
-import RepairRequest from "@/models/RepairRequest";
+import { supabase } from "@/lib/supabase";
 
 export async function GET() {
   try {
@@ -29,18 +29,24 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await connectToDatabase();
-
     // Fetch all repair requests for this user
-    const requests = await RepairRequest.find({ user: (session.user as any).id });
+    const { data: requests, error } = await supabase
+      .from("repair_requests")
+      .select("diagnosis, impact")
+      .eq("user_id", (session.user as any).id);
 
-    const totalItems = requests.length;
-    const totalCO2 = requests.reduce((sum, r) => sum + (r.impact?.co2Saved || 0), 0);
-    const totalWater = requests.reduce((sum, r) => sum + (r.impact?.waterSaved || 0), 0);
-    const totalWaste = requests.reduce((sum, r) => sum + (r.impact?.wastePrevented || 0), 0);
+    if (error) {
+      return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 });
+    }
+
+    const items = requests || [];
+    const totalItems = items.length;
+    const totalCO2 = items.reduce((sum: number, r: any) => sum + (r.impact?.co2Saved || 0), 0);
+    const totalWater = items.reduce((sum: number, r: any) => sum + (r.impact?.waterSaved || 0), 0);
+    const totalWaste = items.reduce((sum: number, r: any) => sum + (r.impact?.wastePrevented || 0), 0);
     // Calculate money saved = replacement cost - repair cost for each item
-    const totalMoneySaved = requests.reduce(
-      (sum, r) => sum + ((r.diagnosis?.estimatedReplaceCost || 0) - (r.diagnosis?.estimatedRepairCost || 0)),
+    const totalMoneySaved = items.reduce(
+      (sum: number, r: any) => sum + ((r.diagnosis?.estimatedReplaceCost || 0) - (r.diagnosis?.estimatedRepairCost || 0)),
       0
     );
 
